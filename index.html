@@ -1,0 +1,2131 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Smart Electric | Instalaciones, Reparaciones Eléctricas y Domótica</title>
+  <link rel="icon" type="image/png" sizes="256x256" href="favicon.png">
+  <style>
+    :root {
+      --navy: #03204a;
+      --navy2: #061936;
+      --blue: #087ddd;
+      --cyan: #00bff5;
+      --yellow: #ffd21a;
+      --orange: #ff7b00;
+      --paper: #f4f9fd;
+      --ink: #092647;
+      --muted: #62788d;
+      --line: #d6e6f2;
+      --green: #1dbb62;
+      --max: 1180px
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: white;
+      overflow-x: clip;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit
+    }
+
+    .container {
+      width: min(var(--max), calc(100% - 48px));
+      margin: auto
+    }
+
+    header {
+      height: 78px;
+      background: linear-gradient(90deg, #021b43, #062d63);
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 12px #00152d55
+    }
+
+    .nav {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 26px
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 245px
+    }
+
+    .brand img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      border-radius: 20%
+    }
+
+    .brand-text {
+      font-weight: 900;
+      line-height: .82;
+      letter-spacing: .5px
+    }
+
+    .brand-text .smart {
+      font-size: 20px;
+      color: #fff
+    }
+
+    .brand-text .electric {
+      font-size: 20px;
+      color: var(--yellow)
+    }
+
+    .brand-text small {
+      display: block;
+      color: #b8d1e6;
+      font-size: 6px;
+      letter-spacing: 1.1px;
+      margin-top: 6px
+    }
+
+    .navlinks {
+      display: flex;
+      gap: 25px;
+      margin-left: auto;
+      font-size: 14px;
+      font-weight: 800
+    }
+
+    .navlinks a {
+      padding: 29px 0 25px;
+      border-bottom: 3px solid transparent
+    }
+
+    .navlinks a:hover,
+    .navlinks a.active {
+      border-color: var(--yellow)
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 999px;
+      background: var(--yellow);
+      color: #10243b;
+      font-weight: 900;
+      padding: 11px 18px;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 5px 12px #00152d20
+    }
+
+    .btn.blue {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .btn.green {
+      background: var(--green);
+      color: #fff
+    }
+
+    .btn.outline {
+      background: transparent;
+      border: 1px solid #6fa7ce;
+      color: #fff;
+      box-shadow: none
+    }
+
+    .hamb {
+      display: none;
+      margin-left: auto;
+      background: none;
+      border: 0;
+      color: #fff;
+      font-size: 28px
+    }
+
+    .hero {
+      background: #031b3c;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      min-height: 465px;
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 45px 20px 45px 0
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1.6px;
+      text-transform: uppercase
+    }
+
+    .hero h1 {
+      font-size: 43px;
+      line-height: .98;
+      letter-spacing: -1.8px;
+      margin: 11px 0 18px
+    }
+
+    .hero h1 span {
+      color: var(--yellow)
+    }
+
+    .hero p {
+      font-size: 14px;
+      line-height: 1.35;
+      color: #d5e4ef;
+      max-width: 460px;
+      margin: 0
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 22px 0
+    }
+
+    .location {
+      font-size: 11px;
+      color: #c6d9e6
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .hero-badge-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #08295288;
+      border: 1px solid #1c5288;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #e0edfa;
+    }
+
+    .hero-badge-item span {
+      color: var(--yellow);
+      font-size: 12px;
+    }
+
+    .badge-urgencia {
+      background: #ff553322;
+      border-color: #ff553388;
+      color: #ff9b85;
+    }
+
+    .badge-urgencia span {
+      color: #ff5533;
+    }
+
+    .hero-photo {
+      position: relative;
+      overflow: hidden
+    }
+
+    .hero-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .hero-photo:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #031b3c 0%, #031b3c55 20%, transparent 55%)
+    }
+
+    .hero-label {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      z-index: 2;
+      background: #062852dd;
+      border: 1px solid #20c8f877;
+      border-radius: 22px;
+      padding: 8px 12px;
+      font-size: 9px;
+      font-weight: 900;
+      color: #fff
+    }
+
+    .quick {
+      background: #fff;
+      padding: 16px 0 22px
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 13px
+    }
+
+    .quick-card {
+      height: 155px;
+      border-radius: 9px;
+      overflow: hidden;
+      position: relative;
+      color: #fff;
+      display: flex;
+      align-items: flex-end;
+      padding: 13px;
+      border: 1px solid #c6d7e5;
+      box-shadow: 0 4px 13px #12304b18;
+      cursor: pointer;
+      background: #082b4f
+    }
+
+    .quick-card:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, #031a3cdd 0%, #031a3c22 65%)
+    }
+
+    .quick-card img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .quick-card .qcontent {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .qicon {
+      width: 35px;
+      height: 35px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      background: var(--yellow);
+      color: #06264b;
+      font-size: 21px;
+      margin-bottom: 3px
+    }
+
+    .quick-card h3 {
+      font-size: 14px;
+      line-height: 1.05;
+      margin: 0;
+      text-shadow: 0 2px 3px #000
+    }
+
+    .arrow {
+      width: 27px;
+      height: 27px;
+      border: 1px solid #9eeaff;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 16px
+    }
+
+    .quick-card:hover {
+      transform: translateY(-2px);
+      transition: .2s
+    }
+
+    section {
+      padding: 55px 0
+    }
+
+    .services {
+      background: var(--paper);
+      overflow: hidden;
+    }
+
+    .service-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) minmax(0, 2.1fr);
+      gap: 32px;
+    }
+
+    .service-layout h2,
+    .smart h2,
+    .scenarios h2,
+    .process h2,
+    .work h2,
+    .faq h2 {
+      font-size: 38px;
+      line-height: 1.02;
+      letter-spacing: -1px;
+      margin: 8px 0 12px
+    }
+
+    .lead {
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted)
+    }
+
+    .all {
+      display: inline-block;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 900;
+      margin-top: 15px
+    }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px
+    }
+
+    .service-card {
+      background: #fff;
+      border: 1px solid #cfe1ee;
+      border-radius: 8px;
+      padding: 15px;
+      min-height: 130px
+    }
+
+    .service-card .icon {
+      font-size: 23px;
+      color: var(--blue)
+    }
+
+    .service-card h3 {
+      font-size: 11px;
+      margin: 7px 0 5px
+    }
+
+    .service-card p {
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--muted);
+      margin: 0
+    }
+
+    .service-card a {
+      display: block;
+      color: var(--blue);
+      font-size: 8px;
+      font-weight: 900;
+      margin-top: 10px
+    }
+
+    .smart {
+      background: #03204a;
+      color: #fff;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      max-width: var(--max);
+      margin: auto;
+      overflow: hidden;
+    }
+
+    .smart-image {
+      min-height: 390px
+    }
+
+    .smart-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .smart-copy {
+      padding: 45px 42px
+    }
+
+    .smart-copy .lead {
+      color: #d1dfeb
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 17px;
+      margin: 25px 0
+    }
+
+    .feature {
+      font-size: 12px
+    }
+
+    .feature-icon {
+      font-size: 23px;
+      color: var(--yellow);
+      float: left;
+      margin-right: 7px
+    }
+
+    .feature b {
+      font-size: 12px
+    }
+
+    .feature p {
+      font-size: 8px;
+      color: #bfd2e0;
+      margin: 4px 0 0;
+      line-height: 1.3
+    }
+
+    .scenarios {
+      background: #fff
+    }
+
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 22px
+    }
+
+    .scenario-card {
+      border: 1px solid #d6e6f2;
+      border-radius: 7px;
+      overflow: hidden;
+      background: #fff
+    }
+
+    .scenario-card img {
+      width: 100%;
+      height: 105px;
+      object-fit: cover
+    }
+
+    .scenario-body {
+      padding: 9px
+    }
+
+    .scenario-body .si {
+      color: var(--blue);
+      font-size: 15px
+    }
+
+    .scenario-body h3 {
+      font-size: 12px;
+      margin: 4px 0
+    }
+
+    .scenario-body p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.25;
+      margin: 0
+    }
+
+    .scenario-cta {
+      text-align: center;
+      margin-top: 20px
+    }
+
+    .process {
+      background: #eaf6fc
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 26px
+    }
+
+    .step {
+      padding: 0 22px;
+      border-right: 1px solid #b8d9eb;
+      min-height: 110px
+    }
+
+    .step:last-child {
+      border: 0
+    }
+
+    .step .num {
+      font-size: 25px;
+      color: #99b7cd;
+      font-weight: 900
+    }
+
+    .step .ico {
+      font-size: 22px;
+      color: var(--blue);
+      margin-bottom: 4px
+    }
+
+    .step h3 {
+      font-size: 11px;
+      margin: 2px 0
+    }
+
+    .step p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.25;
+      margin: 0
+    }
+
+    .work {
+      background: #fff
+    }
+
+    .work-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end
+    }
+
+    .work-link {
+      color: var(--blue);
+      font-size: 9px;
+      font-weight: 900
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 22px
+    }
+
+    .gallery img {
+      width: 100%;
+      height: 105px;
+      object-fit: cover;
+      border-radius: 6px
+    }
+
+    /* Seccion Reseñas Google */
+    .reviews {
+      background: #ffffff;
+      border-top: 1px solid #e2eaf0;
+      border-bottom: 1px solid #e2eaf0;
+    }
+
+    .reviews-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .rating-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: #fffdf5;
+      border: 1px solid #ffe285;
+      border-radius: 999px;
+      padding: 8px 18px;
+    }
+
+    .rating-score {
+      font-size: 26px;
+      font-weight: 900;
+      color: #10243b;
+      line-height: 1;
+    }
+
+    .rating-stars {
+      color: #e0a800;
+      font-size: 18px;
+      letter-spacing: 2px;
+    }
+
+    .rating-google-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--blue);
+      text-decoration: none;
+      transition: color .2s;
+    }
+
+    .rating-google-link:hover {
+      text-decoration: underline;
+    }
+
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .review-card {
+      background: #fdfefe;
+      border: 1px solid #dbe6ef;
+      border-radius: 10px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: transform .2s ease, box-shadow .2s ease;
+      box-shadow: 0 4px 12px rgba(9, 38, 71, 0.04);
+    }
+
+    .review-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(9, 38, 71, 0.08);
+    }
+
+    .review-card::before {
+      content: '"';
+      position: absolute;
+      top: 10px;
+      right: 18px;
+      font-size: 48px;
+      font-family: Georgia, serif;
+      color: #e2ecf5;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .review-stars {
+      color: #e0a800;
+      font-size: 14px;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+    }
+
+    .review-text {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #243c53;
+      margin: 0 0 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .review-author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid #edf2f7;
+      padding-top: 12px;
+    }
+
+    .review-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .review-info b {
+      font-size: 13px;
+      color: var(--ink);
+      display: block;
+    }
+
+    .review-info span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .review-verified {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    .about-zone {
+      background: var(--paper)
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px
+    }
+
+    .about-card {
+      min-height: 205px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #03204a, #07528a);
+      color: #fff;
+      padding: 25px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .about-card:after {
+      content: "";
+      position: absolute;
+      right: -20px;
+      bottom: -25px;
+      width: 220px;
+      height: 180px;
+      background: url('./images/unsplash1.jpg') center/cover;
+      opacity: .23;
+      border-radius: 50%
+    }
+
+    .about-card>* {
+      position: relative;
+      z-index: 1
+    }
+
+    .about-card h2 {
+      font-size: 22px;
+      max-width: 420px
+    }
+
+    .about-card .lead {
+      color: #d0e1ec;
+      max-width: 430px
+    }
+
+    .pills {
+      display: flex;
+      gap: 22px;
+      font-size: 9px;
+      font-weight: 900;
+      margin-top: 20px
+    }
+
+    .pills span:before {
+      content: '✦';
+      color: var(--yellow);
+      margin-right: 5px
+    }
+
+    .zone-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 25px
+    }
+
+    .zone-card h3 {
+      margin: 0 0 6px;
+      font-size: 16px
+    }
+
+    .zone-card p {
+      font-size: 9px;
+      color: var(--muted)
+    }
+
+    .zones {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 15px
+    }
+
+    .zone {
+      border: 1px solid #cfe1ee;
+      border-radius: 15px;
+      padding: 8px 12px;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 900
+    }
+
+    .map-wrapper {
+      margin-top: 14px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #d6e6f2;
+      background: #f0f6fa;
+      height: 160px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .map-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transition: transform .3s ease, filter .3s ease;
+    }
+
+    .map-wrapper:hover img {
+      transform: scale(1.04);
+      filter: brightness(0.95);
+    }
+
+    .map-wrapper .map-hint {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(3, 32, 74, 0.82);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+      transition: opacity .2s ease;
+    }
+
+    .modal-map-box {
+      max-width: 820px;
+      width: 100%;
+      padding: 24px;
+    }
+
+    .modal-map-box h2 {
+      margin: 4px 0 14px;
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    .modal-map-img-container {
+      width: 100%;
+      max-height: 70vh;
+      overflow: hidden;
+      border-radius: 10px;
+      border: 1px solid #d6e6f2;
+      background: #eef5fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-map-img-container img {
+      width: 100%;
+      height: auto;
+      max-height: 70vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .modal-map-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .modal-map-footer span {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .faq {
+      background: #fff
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-top: 22px
+    }
+
+    .faq details {
+      border: 1px solid #d8e7f1;
+      border-radius: 6px;
+      padding: 8px 11px
+    }
+
+    .faq summary {
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer
+    }
+
+    .faq p {
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    .cta {
+      background: linear-gradient(135deg, #021838 0%, #062a5c 100%);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      padding: 55px 0;
+      border-top: 1px solid #143e75;
+    }
+
+    .cta:after {
+      content: "";
+      position: absolute;
+      inset: 0 0 0 45%;
+      background: url('./images/unsplash2.jpg') center/cover;
+      opacity: .18;
+      pointer-events: none;
+    }
+
+    .cta-inner {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .cta-copy h2 {
+      font-size: 32px;
+      line-height: 1.1;
+      margin: 8px 0 12px;
+      color: #fff;
+    }
+
+    .cta-copy h2 span {
+      color: var(--yellow);
+    }
+
+    .cta-copy p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #d0e2f2;
+      margin: 0 0 20px;
+    }
+
+    .cta-direct {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .cta-direct-phone {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cta-card-form {
+      background: #ffffff;
+      color: var(--ink);
+      border-radius: 14px;
+      padding: 26px 28px;
+      box-shadow: 0 15px 35px rgba(0, 15, 35, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .cta-card-form h3 {
+      font-size: 18px;
+      margin: 0 0 6px;
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .cta-card-form p.form-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 18px;
+    }
+
+    .contact-form {
+      display: grid;
+      gap: 13px;
+    }
+
+    .form-group {
+      display: grid;
+      gap: 5px;
+      text-align: left;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #c8d9e6;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(8, 125, 221, 0.15);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .btn-submit-wa {
+      width: 100%;
+      background: var(--green);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 13px 20px;
+      border-radius: 8px;
+      border: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(29, 187, 98, 0.35);
+      transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
+      margin-top: 4px;
+    }
+
+    .btn-submit-wa:hover {
+      background: #17a454;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(29, 187, 98, 0.45);
+    }
+
+    .form-note {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      margin: 10px 0 0;
+    }
+
+    footer {
+      background: #02152f;
+      color: #b9cde0;
+      padding: 28px 0
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      align-items: center;
+      gap: 25px
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+
+    .footer-brand img {
+      width: 100px;
+      height: 100px;
+      border-radius: 1;
+      object-fit: cover
+    }
+
+    .footer-brand b {
+      display: block;
+      color: #fff;
+      font-size: 17px;
+      line-height: .9
+    }
+
+    .footer-brand span {
+      color: var(--yellow);
+      font-size: 17px;
+      font-weight: 900
+    }
+
+    .footer-text {
+      font-size: 8px;
+      line-height: 1.5
+    }
+
+    .float {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 60;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: #fff;
+      font-size: 22px;
+      box-shadow: 0 7px 20px #0005
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: #0009;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px
+    }
+
+    .modal.open {
+      display: flex
+    }
+
+    .modal-box {
+      background: #fff;
+      max-width: 500px;
+      width: 100%;
+      border-radius: 16px;
+      padding: 27px;
+      position: relative
+    }
+
+    .modal-close {
+      position: absolute;
+      right: 12px;
+      top: 7px;
+      border: 0;
+      background: none;
+      font-size: 27px
+    }
+
+    @media(max-width:900px) {
+
+      .navlinks,
+      .nav>.btn {
+        display: none
+      }
+
+      .mobile-menu .navlinks {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        left: auto;
+        width: 240px;
+        height: auto;
+        padding: 60px 0 30px 0;
+        background: rgba(3, 32, 74, 0.98);
+        backdrop-filter: blur(15px);
+        justify-content: flex-start;
+        align-items: center;
+        gap: 20px;
+        z-index: 999;
+        transform-origin: top right;
+        animation: popoverMenu .3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      }
+
+      .mobile-menu .navlinks a {
+        font-size: 20px;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 1px;
+        transition: color .2s
+      }
+
+      .mobile-menu .navlinks a:hover {
+        color: var(--yellow)
+      }
+
+      @keyframes popoverMenu {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateY(-10px)
+        }
+
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0)
+        }
+      }
+
+      .mobile-menu .hamb {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 1000;
+        font-size: 34px
+      }
+
+      .hamb {
+        display: block
+      }
+
+      .brand {
+        min-width: 0
+      }
+
+      .hero-grid,
+      .service-layout,
+      .smart,
+      .about-grid {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photo {
+        height: 310px
+      }
+
+      .hero-copy {
+        padding: 45px 0 28px
+      }
+
+      .quick-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .service-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .scenario-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .steps {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .gallery {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .reviews-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cta-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    @media(max-width:560px) {
+      .container {
+        width: calc(100% - 28px)
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .cta-card-form {
+        padding: 20px 16px;
+      }
+
+      .brand img {
+        width: 68px;
+        height: 68px
+      }
+
+      .brand-text .smart,
+      .brand-text .electric {
+        font-size: 17px
+      }
+
+      .quick-grid,
+      .service-grid,
+      .scenario-grid,
+      .steps,
+      .gallery,
+      .faq-grid {
+        grid-template-columns: 1fr
+      }
+
+      .quick-card {
+        height: 175px
+      }
+
+      .hero h1 {
+        font-size: 38px
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .smart-copy {
+        padding: 32px 22px
+      }
+
+      .smart-image {
+        min-height: 280px
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr
+      }
+
+      .cta:after {
+        display: none
+      }
+    }
+
+    @media(max-width:560px) {
+      body {
+        font-size: 15px
+      }
+
+      nav {
+        font-size: 15px
+      }
+
+      .hero p,
+      .lead {
+        font-size: 17px
+      }
+
+      .trust-card {
+        font-size: 15px
+      }
+
+      .card h3 {
+        font-size: 18px
+      }
+
+      .card p {
+        font-size: 14px
+      }
+
+      .link {
+        font-size: 14px
+      }
+
+      .scenario h3 {
+        font-size: 17px
+      }
+
+      .scenario p {
+        font-size: 14px
+      }
+
+      .step h3 {
+        font-size: 17px
+      }
+
+      .step p {
+        font-size: 14px
+      }
+
+      .faq summary {
+        font-size: 14px
+      }
+
+      .faq p {
+        font-size: 14px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="container nav"><a class="brand" href="#inicio"><img src="./images/logo-smart-electric.png"
+          alt="Smart Electric"><span class="brand-text"><span class="smart">SMART</span><span
+            class="electric">ELECTRIC</span><small>ELECTRICIDAD + TECNOLOGÍA</small></span></a>
+      <nav class="navlinks"><a class="active" href="#inicio">Inicio</a><a href="#servicios">Servicios</a><a
+          href="#trabajos">Trabajos</a><a href="#resenas">Reseñas</a><a href="#cobertura">Zonas</a><a
+          href="#inteligente">Hogar inteligente</a><a href="#contacto">Contacto</a></nav><a class="btn green"
+        href="https://wa.me/543416219609" target="_blank" style="display:inline-flex;align-items:center;gap:6px"><svg
+          xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:2.2em;height:2.2em;flex-shrink:0">
+          <path d="M128,32A96.1,96.1,0,0,0,45.4,177h0L36,210.2a7.9,7.9,0,0,0,9.8,9.8L79,210.6h0A96,96,0,1,0,128,32Z"
+            fill="#25D366" />
+          <path
+            d="M152.1,184A79.9,79.9,0,0,1,72,103.9,28,28,0,0,1,100,76h0a6.8,6.8,0,0,1,6,3.5l11.7,20.4a8.1,8.1,0,0,1-.1,8.1l-9.4,15.7h0a48,48,0,0,0,24.1,24.1h0l15.7-9.4a8.1,8.1,0,0,1,8.1-.1L176.5,150a6.8,6.8,0,0,1,3.5,6A28.1,28.1,0,0,1,152.1,184Z"
+            fill="white" />
+        </svg>WhatsApp</a><button class="hamb" aria-label="Abrir menú"
+        onclick="document.body.classList.toggle('mobile-menu')">☰</button>
+    </div>
+  </header>
+  <main id="inicio">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow">Smart Electric · Servicio Profesional</div>
+          <h1>Instalaciones, reparaciones eléctricas y <span>urgencias.</span></h1>
+          <p>Soluciones eléctricas seguras, prolijas y garantizadas para tu hogar o comercio. Atención de urgencias,
+            tableros, recableados y tecnología Smart.</p>
+          <div class="actions"><a class="btn green"
+              href="https://wa.me/543416219609?text=Hola%20Smart%20Electric%2C%20tengo%20una%20urgencia%20el%C3%A9ctrica."
+              target="_blank" style="display:inline-flex;align-items:center;gap:6px"><svg
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:2.2em;height:2.2em;flex-shrink:0">
+                <path
+                  d="M128,32A96.1,96.1,0,0,0,45.4,177h0L36,210.2a7.9,7.9,0,0,0,9.8,9.8L79,210.6h0A96,96,0,1,0,128,32Z"
+                  fill="#25D366" />
+                <path
+                  d="M152.1,184A79.9,79.9,0,0,1,72,103.9,28,28,0,0,1,100,76h0a6.8,6.8,0,0,1,6,3.5l11.7,20.4a8.1,8.1,0,0,1-.1,8.1l-9.4,15.7h0a48,48,0,0,0,24.1,24.1h0l15.7-9.4a8.1,8.1,0,0,1,8.1-.1L176.5,150a6.8,6.8,0,0,1,3.5,6A28.1,28.1,0,0,1,152.1,184Z"
+                  fill="white" />
+              </svg>Urgencias WhatsApp</a><a class="btn"
+              href="https://wa.me/543416219609?text=Hola%20Smart%20Electric%2C%20quiero%20pedir%20un%20presupuesto."
+              target="_blank" style="display:inline-flex;align-items:center;gap:6px">Pedir presupuesto</a><a
+              class="btn outline" href="#servicios">Ver servicios →</a></div>
+          <div class="location">⌖ Rosario · Funes · Roldán · Ibarlucea</div>
+          <div class="hero-badges">
+            <a href="#resenas" class="hero-badge-item"
+              style="text-decoration:none;border-color:#ffd21a;background:#fff9e6;color:#10243b"><span
+                style="color:#e0a800">★</span> <b>5.0 en Google</b> (Reseñas)</a>
+            <span class="hero-badge-item badge-urgencia"><span>⚡</span> Urgencias y fallas</span>
+            <span class="hero-badge-item"><span>🛡</span> Presupuestos sin sorpresas</span>
+            <span class="hero-badge-item"><span>✓</span> Trabajos garantizados</span>
+            <span class="hero-badge-item"><span>⌂</span> Opciones Smart</span>
+          </div>
+        </div>
+        <div class="hero-photo">
+          <div class="hero-label">⚡ ELECTRICIDAD PROFESIONAL<br>+ SOLUCIONES SMART</div><img
+            src="./images/Reparaciones_electricas_hero.jpg" alt="Servicio Eléctrico Profesional">
+        </div>
+      </div>
+    </section>
+    <section class="quick">
+      <div class="container quick-grid"><a class="quick-card"
+          href="https://wa.me/543416219609?text=Hola%20Smart%20Electric%2C%20tengo%20una%20urgencia%20el%C3%A9ctrica."
+          target="_blank"><img src="./images/foto_trabajo.png" alt="Urgencias y reparaciones">
+          <div class="qcontent">
+            <div>
+              <div class="qicon" style="background:#ff5533;color:#fff">⚡</div>
+              <h3>Urgencias &amp;<br>Reparaciones</h3>
+            </div>
+            <div class="arrow">→</div>
+          </div>
+        </a><a class="quick-card" href="#servicios"><img src="./images/Tablero_Electrico_Smart.jpeg"
+            alt="Tableros y protecciones">
+          <div class="qcontent">
+            <div>
+              <div class="qicon">🛡</div>
+              <h3>Tableros y<br>protecciones</h3>
+            </div>
+            <div class="arrow">→</div>
+          </div>
+        </a><a class="quick-card" href="#servicios"><img src="./images/Tablero antes y despues.jfif"
+            alt="Modernización de Tableros">
+          <div class="qcontent">
+            <div>
+              <div class="qicon">💡</div>
+              <h3>Modernización<br>de Tableros</h3>
+            </div>
+            <div class="arrow">→</div>
+          </div>
+        </a><a class="quick-card" href="#inteligente"><img src="./images/unsplash4.jpg" alt="Hogar inteligente">
+          <div class="qcontent">
+            <div>
+              <div class="qicon">⌂</div>
+              <h3>Hogar<br>inteligente</h3>
+            </div>
+            <div class="arrow">→</div>
+          </div>
+        </a></div>
+    </section>
+    <section id="servicios" class="services">
+      <div class="container service-layout">
+        <div>
+          <div class="eyebrow">Nuestros servicios</div>
+          <h2>Electricidad confiable para tu hogar o local</h2>
+          <p class="lead">Desde una urgencia o falla puntual hasta renovaciones completas y tecnología inteligente.
+            Trabajo prolijo, presupuestos transparentes y materiales normalizados.</p><a class="all"
+            href="https://wa.me/543416219609?text=Hola%20Smart%20Electric%2C%20quiero%20hacer%20una%20consulta."
+            target="_blank">Consultanos por WhatsApp →</a>
+        </div>
+        <div class="service-grid">
+          <article class="service-card" style="border-top:3px solid #ff5533">
+            <div class="icon" style="color:#ff5533">⚡</div>
+            <h3>Urgencias &amp; Fugas</h3>
+            <p>Detección de cortocircuitos, disyuntores que saltan, tomas sin luz o recalentamientos.</p><a
+              href="https://wa.me/543416219609?text=Hola%20Smart%20Electric%2C%20necesito%20atenci%C3%B3n%20por%20una%20urgencia."
+              target="_blank" style="color:#ff5533">Pedir auxilio urgente →</a>
+          </article>
+          <article class="service-card">
+            <div class="icon">🛡</div>
+            <h3>Tableros y protecciones</h3>
+            <p>Renovación, armado prolijo, disyuntores diferenciales, térmicas y puesta a tierra.</p><a href="#"
+              onclick="openModal('Tableros y protecciones','Evaluación, renovación y ordenamiento de tableros existentes, disyuntores diferenciales, llaves térmicas y puesta a tierra segura. Balanceo de fases.')">Ver
+              más →</a>
+          </article>
+          <article class="service-card">
+            <div class="icon">🔧</div>
+            <h3>Reparaciones y cableados</h3>
+            <p>Recableados, cambio de tomas, llaves de punto, líneas para aires acondicionados y hornos.</p><a href="#"
+              onclick="openModal('Reparaciones y cableados','Reparación de circuitos dañados, recableado general o parcial, adecuación de tomas e instalación de circuitos dedicados para electrodomésticos de alto consumo.')">Ver
+              más →</a>
+          </article>
+          <article class="service-card">
+            <div class="icon">💡</div>
+            <h3>Iluminación LED y artefactos</h3>
+            <p>Instalación de luminarias interiores, reflectores exteriores, tiras LED y ventiladores de techo.</p><a
+              href="#"
+              onclick="openModal('Iluminación y artefactos','Instalación y recambio de paneles LED, lámparas, reflectores con sensor de movimiento, iluminación perimetral y ventiladores.')">Ver
+              más →</a>
+          </article>
+          <article class="service-card">
+            <div class="icon">⌂</div>
+            <h3>Instalaciones y ampliaciones</h3>
+            <p>Obras nuevas, reformas, divisiones y adecuaciones eléctricas integrales para viviendas y locales.</p><a
+              href="#"
+              onclick="openModal('Instalaciones y ampliaciones','Provisión y tendido eléctrico para reformas, ampliaciones del hogar, quinchos o locales comerciales.')">Ver
+              más →</a>
+          </article>
+          <article class="service-card" style="border-top:3px solid var(--blue)">
+            <div class="icon">📶</div>
+            <h3>Hogar inteligente &amp; Domótica</h3>
+            <p>Módulos Wi-Fi, llaves táctiles, automatización de luces y control desde tu celular.</p><a
+              href="#inteligente">Conocer opciones Smart →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PRUEBA SOCIAL INMEDIATA: Trabajos reales -->
+    <section id="trabajos" class="work">
+      <div class="container">
+        <div class="work-head">
+          <div>
+            <div class="eyebrow">Trabajos reales</div>
+            <h2>Lo que hacemos</h2>
+          </div><a class="work-link" href="#contacto">Pedir presupuesto →</a>
+        </div>
+        <div class="gallery"><img src="./images/foto_trabajo.png" alt="Reparación eléctrica profesional"><img
+            src="./images/Horno_continuo.jpeg" alt="Reparacion Horno Continuo"><img
+            src="./images/Tablero antes y despues.jfif" alt="Tableros Modernización"><img
+            src="./images/Tablero_Electrico_Smart.jpeg" alt="Tablero Eléctrico Inteligente"><img
+            src="./images/unsplash4.jpg" alt="Hogar inteligente y domótica">
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. REPUTACIÓN Y TESTIMONIOS: 5.0 Google -->
+    <section id="resenas" class="reviews">
+      <div class="container">
+        <div class="reviews-header">
+          <div>
+            <div class="eyebrow">Opiniones y Confianza</div>
+            <h2>Lo que dicen nuestros clientes</h2>
+            <p class="lead" style="margin:4px 0 0">Calificaciones reales de clientes en Rosario, Funes, Roldán e
+              Ibarlucea.</p>
+          </div>
+          <div class="rating-badge">
+            <span class="rating-score">5.0</span>
+            <div>
+              <div class="rating-stars" aria-label="Calificación 5 estrellas">★★★★★</div>
+              <a class="rating-google-link"
+                href="https://www.google.com/maps/search/?api=1&query=Smart%20Electric&query_place_id=ChIJHW1YyyWrt5URmLwYZl4XuBQ"
+                target="_blank" rel="noopener">
+                Ver ficha en Google Maps ↗
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="reviews-grid">
+          <div class="review-card">
+            <div>
+              <div class="review-stars">★★★★★</div>
+              <p class="review-text">"Profesional, puntual y muy detallista. Diagnosticó y solucionó el fallo de
+                inmediato. Excelente relación calidad-precio. Totalmente recomendable."</p>
+            </div>
+            <div class="review-author">
+              <div class="review-avatar">CM</div>
+              <div class="review-info">
+                <b>Candelaria M. <span class="review-verified">✓ Verificada</span></b>
+                <span>Reseña en Google Maps</span>
+              </div>
+            </div>
+          </div>
+          <div class="review-card">
+            <div>
+              <div class="review-stars">★★★★★</div>
+              <p class="review-text">"Contraté los servicios de la Empresa para trabajos en consorcios y en mi domicilio
+                particular, en ambos casos quedé muy conforme. Presupuestos rápidos y claros. Profesionales atentos y
+                prolijos. Totalmente recomendable."</p>
+            </div>
+            <div class="review-author">
+              <div class="review-avatar">MP</div>
+              <div class="review-info">
+                <b>Mariela P. <span class="review-verified">✓ Verificada</span></b>
+                <span>Consorcios & Particular · Google Maps</span>
+              </div>
+            </div>
+          </div>
+          <div class="review-card">
+            <div>
+              <div class="review-stars">★★★★★</div>
+              <p class="review-text">"Un genio, trabaja rápido y todo ordenado."</p>
+            </div>
+            <div class="review-author">
+              <div class="review-avatar">JF</div>
+              <div class="review-info">
+                <b>Julián F. <span class="review-verified">✓ Verificada</span></b>
+                <span>Reseña en Google Maps</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ZONAS DE COBERTURA Y CONFIANZA -->
+    <section id="cobertura" class="about-zone">
+      <div class="container about-grid">
+        <div class="about-card">
+          <div class="eyebrow">Smart Electric · Profesionalismo y Confianza</div>
+          <h2>La tranquilidad de un trabajo eléctrico bien hecho.</h2>
+          <p class="lead">Priorizamos la seguridad de tu familia e instalaciones con trabajos prolijos, ordenados y
+            asesoramiento honesto. Solucionamos desde una urgencia doméstica hasta modernizaciones completas con
+            tecnología Smart.</p>
+          <div class="pills"><span>Seguridad</span><span>Prolijidad</span><span>Garantía</span><span>Tecnología</span>
+          </div>
+        </div>
+        <div class="zone-card">
+          <div class="eyebrow">Estamos cerca</div>
+          <h3>Atendemos hogares y proyectos en:</h3>
+          <div class="zones">
+            <div class="zone">⌖ Rosario</div>
+            <div class="zone">⌖ Funes</div>
+            <div class="zone">⌖ Roldán</div>
+            <div class="zone">⌖ Ibarlucea</div>
+          </div>
+          <div class="map-wrapper" onclick="openMapModal()" role="button" tabindex="0"
+            title="Hacé clic para ampliar el mapa" aria-label="Ampliar mapa del Área de Servicio">
+            <img src="./images/Mapa_de_Servicio.jpg" alt="Mapa de Área de Cobertura - Rosario, Funes, Roldán, Ibarlucea"
+              loading="lazy">
+            <div class="map-hint">🔍 Ampliar mapa</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DIFERENCIAL INNOVADOR: Domótica & Hogar Inteligente -->
+    <section id="inteligente" style="padding:0;background:#03204a">
+      <div class="smart">
+        <div class="smart-image"><img src="./images/unsplash5.jpg" alt="Hogar inteligente"></div>
+        <div class="smart-copy">
+          <div class="eyebrow">Diferencial Smart · El siguiente paso</div>
+          <h2>Transformá tu instalación en inteligente.</h2>
+          <p class="lead">Además de electricidad tradicional, modernizamos tu casa para que puedas controlar luces,
+            artefactos y consumos desde tu celular o con comandos de voz, sin romper paredes.</p>
+          <div class="feature-grid">
+            <div class="feature">
+              <div class="feature-icon">☀</div><b>Iluminación Wi-Fi</b>
+              <p>Encendido y horarios automáticos.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">🛡</div><b>Protección Smart</b>
+              <p>Monitoreo y corte remoto.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">♨</div><b>Confort & Clima</b>
+              <p>Encendido de aire o calefacción.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">▣</div><b>App & Control</b>
+              <p>Todo desde tu teléfono celular.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">▦</div><b>Escenas y Rutinas</b>
+              <p>Configurá ambientes con un toque.</p>
+            </div>
+          </div><a class="btn" href="#escenarios">Ver ejemplos de uso →</a>
+        </div>
+      </div>
+    </section>
+    <section id="escenarios" class="scenarios">
+      <div class="container">
+        <div class="eyebrow">Imaginá esto</div>
+        <h2>¿Qué puede hacer una casa inteligente?</h2>
+        <div class="scenario-grid">
+          <article class="scenario-card"><img src="./images/unsplash6.jpg" alt="Llegás a casa">
+            <div class="scenario-body">
+              <div class="si">⌂</div>
+              <h3>Llegás a casa</h3>
+              <p>Las luces exteriores pueden encenderse automáticamente.</p>
+            </div>
+          </article>
+          <article class="scenario-card"><img src="./images/unsplash4.jpg" alt="Te vas">
+            <div class="scenario-body">
+              <div class="si">↗</div>
+              <h3>Te vas</h3>
+              <p>Apagás determinadas luces y dispositivos con una sola acción.</p>
+            </div>
+          </article>
+          <article class="scenario-card"><img src="./images/unsplash7.jpg" alt="Es de noche">
+            <div class="scenario-body">
+              <div class="si">☾</div>
+              <h3>Es de noche</h3>
+              <p>Las luces se ajustan según horarios y tus preferencias.</p>
+            </div>
+          </article>
+          <article class="scenario-card"><img src="./images/unsplash8.jpg" alt="Estás de vacaciones">
+            <div class="scenario-body">
+              <div class="si">✈</div>
+              <h3>Estás de vacaciones</h3>
+              <p>Programás funciones para simular presencia.</p>
+            </div>
+          </article>
+          <article class="scenario-card"><img src="./images/unsplash4.jpg" alt="Querés controlar algo">
+            <div class="scenario-body">
+              <div class="si">▣</div>
+              <h3>Querés controlar algo</h3>
+              <p>Lo hacés desde tu celular, donde estés.</p>
+            </div>
+          </article>
+        </div>
+        <div class="scenario-cta"><a class="btn blue" href="#inteligente">Quiero conocer las opciones →</a></div>
+      </div>
+    </section>
+
+    <!-- 5. PROCESO DE TRABAJO -->
+    <section class="process">
+      <div class="container">
+        <div class="eyebrow">Cómo trabajamos</div>
+        <h2>Simple y claro.</h2>
+        <div class="steps">
+          <div class="step">
+            <div class="ico">●</div>
+            <div class="num">01</div>
+            <h3>Contacto</h3>
+            <p>Escribinos por WhatsApp y contanos qué necesitás.</p>
+          </div>
+          <div class="step">
+            <div class="ico">⌕</div>
+            <div class="num">02</div>
+            <h3>Evaluación</h3>
+            <p>Analizamos el problema, instalación o proyecto.</p>
+          </div>
+          <div class="step">
+            <div class="ico">▤</div>
+            <div class="num">03</div>
+            <h3>Propuesta</h3>
+            <p>Definimos la solución y el trabajo a realizar.</p>
+          </div>
+          <div class="step">
+            <div class="ico">⚙</div>
+            <div class="num">04</div>
+            <h3>Trabajo</h3>
+            <p>Realizamos el trabajo de manera ordenada y profesional.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="faq">
+      <div class="container">
+        <div class="eyebrow">Preguntas frecuentes</div>
+        <h2>Resolvemos tus dudas.</h2>
+        <div class="faq-grid">
+          <details>
+            <summary>¿Cómo solicito una urgencia o reparación rápida?</summary>
+            <p>Escribinos directamente por WhatsApp contándonos la falla. Si salta una térmica o no tenés luz, te
+              asesoramos en el momento para coordinar una visita a la brevedad.</p>
+          </details>
+          <details>
+            <summary>¿Trabajan sobre instalaciones existentes o antiguas?</summary>
+            <p>Sí, la mayor parte de nuestros trabajos son en casas y comercios ya habitados: renovación de tableros
+              viejos, detección de fugas, colocación de disyuntores y cambio de cableados.</p>
+          </details>
+          <details>
+            <summary>¿Hacen presupuestos antes de empezar?</summary>
+            <p>Totalmente. Te brindamos un presupuesto transparente y detallado de mano de obra y materiales para que
+              sepas con claridad el costo antes de comenzar.</p>
+          </details>
+          <details>
+            <summary>¿Puedo sumar domótica a mi casa sin romper paredes?</summary>
+            <p>Sí. Trabajamos con módulos inteligentes Wi-Fi que se instalan detrás de las llaves de luz existentes o en
+              los tableros, manteniendo tus teclas actuales y sumando control por celular.</p>
+          </details>
+          <details>
+            <summary>¿En qué zonas brindan servicio?</summary>
+            <p>Cubrimos Rosario, Funes, Roldán, Ibarlucea y zonas de influencia.</p>
+          </details>
+          <details>
+            <summary>¿Qué pasa si necesito trámites formales o firma de medidor?</summary>
+            <p>Nos enfocamos en la ejecución técnica y seguridad interior. Para trámites específicos que requieran firma
+              formal ante la distribuidora, disponemos de profesionales matriculados asociados con quienes coordinamos.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+    <section id="contacto" class="cta">
+      <div class="container cta-inner">
+        <div class="cta-copy">
+          <div class="eyebrow" style="color:var(--yellow)">Contacto Inmediato</div>
+          <h2>¿Tenés una urgencia o consulta? <span>Hablemos hoy.</span></h2>
+          <p>Completá el formulario para enviar tu consulta estructurada y abrir tu WhatsApp listo para mandar. O si
+            preferís, escribinos o llamanos de forma directa.</p>
+          <div class="cta-direct">
+            <a class="btn green"
+              href="https://wa.me/543416219609?text=Hola%20Smart%20Electric%2C%20quiero%20hacer%20una%20consulta."
+              target="_blank" style="display:inline-flex;align-items:center;gap:6px">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+                style="width:1.8em;height:1.8em;flex-shrink:0">
+                <path
+                  d="M128,32A96.1,96.1,0,0,0,45.4,177h0L36,210.2a7.9,7.9,0,0,0,9.8,9.8L79,210.6h0A96,96,0,1,0,128,32Z"
+                  fill="#25D366" />
+                <path
+                  d="M152.1,184A79.9,79.9,0,0,1,72,103.9,28,28,0,0,1,100,76h0a6.8,6.8,0,0,1,6,3.5l11.7,20.4a8.1,8.1,0,0,1-.1,8.1l-9.4,15.7h0a48,48,0,0,0,24.1,24.1h0l15.7-9.4a8.1,8.1,0,0,1,8.1-.1L176.5,150a6.8,6.8,0,0,1,3.5,6A28.1,28.1,0,0,1,152.1,184Z"
+                  fill="white" />
+              </svg>WhatsApp directo
+            </a>
+            <a class="cta-direct-phone" href="tel:+543416219609">📞 341 621-9609</a>
+          </div>
+          <p style="font-size:12px;color:#a8c4de;margin-top:16px">⌖ Cobertura: Rosario · Funes · Roldán · Ibarlucea</p>
+        </div>
+
+        <div class="cta-card-form">
+          <h3>Escribinos por WhatsApp</h3>
+          <p class="form-subtitle">Completá los datos y te respondemos a la brevedad.</p>
+          <form id="waForm" class="contact-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="waNombre">Tu Nombre</label>
+                <input type="text" id="waNombre" name="nombre" class="form-control" placeholder="Ej: Carlos" required
+                  autocomplete="name">
+              </div>
+              <div class="form-group">
+                <label for="waZona">Tu Zona</label>
+                <select id="waZona" name="zona" class="form-control" required>
+                  <option value="Rosario">Rosario</option>
+                  <option value="Funes">Funes</option>
+                  <option value="Roldán">Roldán</option>
+                  <option value="Ibarlucea">Ibarlucea</option>
+                  <option value="Otra zona">Otra zona</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="waServicio">¿Qué necesitás?</label>
+              <select id="waServicio" name="servicio" class="form-control" required>
+                <option value="Urgencia o falla eléctrica">Urgencia o falla eléctrica (sin luz, salta térmica)</option>
+                <option value="Tablero eléctrico">Tablero eléctrico / renovación de protecciones</option>
+                <option value="Reparación o recableado">Reparación o recableado / tomas / disyuntor</option>
+                <option value="Instalación de luminarias">Iluminación LED / ventiladores / artefactos</option>
+                <option value="Instalación nueva u obra">Instalación nueva / reforma / ampliación</option>
+                <option value="Domótica y automatización">Domótica (módulos Wi-Fi, hogar inteligente)</option>
+                <option value="Consulta general">Otra consulta / presupuesto</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="waDetalle">Detalle breve (opcional)</label>
+              <textarea id="waDetalle" name="detalle" class="form-control" rows="2"
+                placeholder="Ej: Salta el disyuntor cuando prendo el horno o el aire..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit-wa">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+                style="width:1.5em;height:1.5em;flex-shrink:0">
+                <path
+                  d="M128,32A96.1,96.1,0,0,0,45.4,177h0L36,210.2a7.9,7.9,0,0,0,9.8,9.8L79,210.6h0A96,96,0,1,0,128,32Z"
+                  fill="white" />
+                <path
+                  d="M152.1,184A79.9,79.9,0,0,1,72,103.9,28,28,0,0,1,100,76h0a6.8,6.8,0,0,1,6,3.5l11.7,20.4a8.1,8.1,0,0,1-.1,8.1l-9.4,15.7h0a48,48,0,0,0,24.1,24.1h0l15.7-9.4a8.1,8.1,0,0,1,8.1-.1L176.5,150a6.8,6.8,0,0,1,3.5,6A28.1,28.1,0,0,1,152.1,184Z"
+                  fill="#1dbb62" />
+              </svg>
+              Enviar consulta por WhatsApp
+            </button>
+            <p class="form-note">🔒 No almacenamos tus datos. El mensaje se abre directamente en tu aplicación de
+              WhatsApp.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-brand"><img src="./images/logo-smart-electric.png">
+        <div><b>SMART</b><span>ELECTRIC</span>
+          <div class="footer-text">Instalaciones, reparaciones eléctricas<br>y soluciones para hogares inteligentes.
+          </div>
+        </div>
+      </div>
+      <div class="footer-text">⌖ Rosario · Funes · Roldán · Ibarlucea<br><br>WhatsApp: 341-6219609</div>
+      <div class="footer-text">Instagram: <a href="https://www.instagram.com/SmartElectricAr" target="_blank"
+          rel="noopener" style="color:var(--yellow);text-decoration:none;font-weight:700;transition:opacity .2s"
+          onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">@SmartElectricAr</a><br><br>© 2026
+        Smart Electric</div>
+    </div>
+  </footer>
+  <a class="float" href="https://wa.me/543416219609" target="_blank" aria-label="WhatsApp"><svg
+      xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:2.2em;height:2.2em;flex-shrink:0">
+      <path d="M128,32A96.1,96.1,0,0,0,45.4,177h0L36,210.2a7.9,7.9,0,0,0,9.8,9.8L79,210.6h0A96,96,0,1,0,128,32Z"
+        fill="#25D366" />
+      <path
+        d="M152.1,184A79.9,79.9,0,0,1,72,103.9,28,28,0,0,1,100,76h0a6.8,6.8,0,0,1,6,3.5l11.7,20.4a8.1,8.1,0,0,1-.1,8.1l-9.4,15.7h0a48,48,0,0,0,24.1,24.1h0l15.7-9.4a8.1,8.1,0,0,1,8.1-.1L176.5,150a6.8,6.8,0,0,1,3.5,6A28.1,28.1,0,0,1,152.1,184Z"
+        fill="white" />
+    </svg></a>
+  <div class="modal" id="modal">
+    <div class="modal-box"><button class="modal-close" onclick="closeModal()">×</button>
+      <div class="eyebrow">Smart Electric</div>
+      <h2 id="modalTitle"></h2>
+      <p class="lead" id="modalText"></p><a class="btn green" href="https://wa.me/543416219609" target="_blank"
+        style="display:inline-flex;align-items:center;gap:6px"><svg xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 256 256" style="width:2.2em;height:2.2em;flex-shrink:0">
+          <path d="M128,32A96.1,96.1,0,0,0,45.4,177h0L36,210.2a7.9,7.9,0,0,0,9.8,9.8L79,210.6h0A96,96,0,1,0,128,32Z"
+            fill="#25D366" />
+          <path
+            d="M152.1,184A79.9,79.9,0,0,1,72,103.9,28,28,0,0,1,100,76h0a6.8,6.8,0,0,1,6,3.5l11.7,20.4a8.1,8.1,0,0,1-.1,8.1l-9.4,15.7h0a48,48,0,0,0,24.1,24.1h0l15.7-9.4a8.1,8.1,0,0,1,8.1-.1L176.5,150a6.8,6.8,0,0,1,3.5,6A28.1,28.1,0,0,1,152.1,184Z"
+            fill="white" />
+        </svg>Consultar por WhatsApp</a>
+    </div>
+  </div>
+
+  <!-- Modal para ampliar el mapa -->
+  <div class="modal" id="mapModal" role="dialog" aria-modal="true" aria-labelledby="mapModalTitle">
+    <div class="modal-box modal-map-box">
+      <button class="modal-close" onclick="closeMapModal()" aria-label="Cerrar modal">×</button>
+      <div class="eyebrow">Smart Electric · Cobertura</div>
+      <h2 id="mapModalTitle">Área de Servicio</h2>
+      <div class="modal-map-img-container">
+        <img src="./images/Mapa_de_Servicio.jpg"
+          alt="Mapa ampliado del Área de Servicio: Rosario, Funes, Roldán, Ibarlucea">
+      </div>
+      <div class="modal-map-footer">
+        <span>⌖ Rosario · Funes · Roldán · Ibarlucea</span>
+        <a class="btn green"
+          href="https://wa.me/543416219609?text=Hola%20Smart%20Electric%2C%20quer%C3%ADa%20consultar%20por%20un%20servicio%20en%20mi%20zona."
+          target="_blank" style="display:inline-flex;align-items:center;gap:6px">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" style="width:1.8em;height:1.8em;flex-shrink:0">
+            <path d="M128,32A96.1,96.1,0,0,0,45.4,177h0L36,210.2a7.9,7.9,0,0,0,9.8,9.8L79,210.6h0A96,96,0,1,0,128,32Z"
+              fill="#25D366" />
+            <path
+              d="M152.1,184A79.9,79.9,0,0,1,72,103.9,28,28,0,0,1,100,76h0a6.8,6.8,0,0,1,6,3.5l11.7,20.4a8.1,8.1,0,0,1-.1,8.1l-9.4,15.7h0a48,48,0,0,0,24.1,24.1h0l15.7-9.4a8.1,8.1,0,0,1,8.1-.1L176.5,150a6.8,6.8,0,0,1,3.5,6A28.1,28.1,0,0,1,152.1,184Z"
+              fill="white" />
+          </svg>Consultar cobertura por WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal(t, x) { event.preventDefault(); modalTitle.textContent = t; modalText.textContent = x; modal.classList.add('open') }
+    function closeModal() { modal.classList.remove('open') }
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal() })
+
+    const mapModal = document.getElementById('mapModal');
+    function openMapModal() {
+      mapModal.classList.add('open');
+    }
+    function closeMapModal() {
+      mapModal.classList.remove('open');
+    }
+    mapModal.addEventListener('click', e => { if (e.target === mapModal) closeMapModal() });
+
+    // Permitir abrir con teclado (Enter o Espacio)
+    const mapWrapper = document.querySelector('.map-wrapper');
+    if (mapWrapper) {
+      mapWrapper.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openMapModal();
+        }
+      });
+    }
+
+    // Cerrar modales con tecla Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeMapModal();
+      }
+    });
+
+    // Cerrar menú móvil al hacer clic en un enlace
+    document.querySelectorAll('.navlinks a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        document.body.classList.remove('mobile-menu');
+      });
+    });
+
+    // Manejo del formulario hacia WhatsApp
+    const waForm = document.getElementById('waForm');
+    if (waForm) {
+      waForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const nombre = document.getElementById('waNombre').value.trim();
+        const zona = document.getElementById('waZona').value;
+        const servicio = document.getElementById('waServicio').value;
+        const detalle = document.getElementById('waDetalle').value.trim();
+
+        let mensaje = `Hola Smart Electric, soy ${nombre} de ${zona}.\nNecesito consultar por: ${servicio}.`;
+        if (detalle) {
+          mensaje += `\nDetalle: ${detalle}`;
+        }
+
+        const phone = '543416219609';
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+      });
+    }
+  </script>
+</body>
+
+</html>
