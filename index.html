@@ -4,6 +4,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18340509419"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-18340509419');
+  </script>
   <title>Smart Electric | Electricista Matriculado en Rosario - Instalaciones Eléctricas</title>
   <meta name="description" content="Electricista matriculado a domicilio en Rosario. Servicios e instalaciones eléctricas seguras y profesionales para hogares y comercios en Rosario y alrededores.">
   <meta name="keywords" content="electricista rosario, electricista en rosario, instalaciones electricas, electricista matriculado, electricista a domicilio, electricista matriculado rosario, instalaciones electricas rosario, electricista a domicilio rosario, electricista">
@@ -679,11 +687,29 @@
       });
     });
 
+    // Seguimiento de conversiones de Google Ads para WhatsApp
+    function trackWhatsAppConversion() {
+      if (typeof gtag === 'function') {
+        gtag('event', 'conversion', {
+          'send_to': 'AW-18340509419/L4P1CM2-m7AdEOvtt6lE'
+        });
+      }
+    }
+
+    // Registrar conversión en cada enlace o botón que dirija a WhatsApp
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest('a[href*="wa.me"], a[href*="whatsapp.com"], a[href*="api.whatsapp.com"]');
+      if (link) {
+        trackWhatsAppConversion();
+      }
+    });
+
     // Manejo del formulario hacia WhatsApp
     const waForm = document.getElementById('waForm');
     if (waForm) {
       waForm.addEventListener('submit', function (e) {
         e.preventDefault();
+        trackWhatsAppConversion();
         const nombre = document.getElementById('waNombre').value.trim();
         const zona = document.getElementById('waZona').value;
         const servicio = document.getElementById('waServicio').value;
