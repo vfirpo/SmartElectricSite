@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Electric — Cotizador Profesional & Presupuestos</title>
+
+  <!-- PRIVACIDAD ABSOLUTA: Bloquear indexación de robots y buscadores -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
+
+  <link rel="icon" type="image/png" sizes="256x256" href="../favicon.png">
+  <link rel="stylesheet" href="cotizador.css">
+</head>
+
+<body>
+
+  <!-- =========================================================================
+       PANTALLA DE BLOQUEO POR PIN (ACCESO PRIVADO)
+       ========================================================================= -->
+  <div class="lock-screen-overlay" id="pinLockScreen">
+    <div class="lock-box">
+      <img src="../images/logo-smart-electric.png" alt="Smart Electric Logo" class="lock-logo">
+      <h2>Acceso Privado</h2>
+      <p>Ingresá tu PIN de seguridad para ingresar al cotizador interno de Smart Electric.</p>
+
+      <div class="pin-input-group">
+        <input type="password" maxlength="1" class="pin-digit" inputmode="numeric" autocomplete="off" autofocus>
+        <input type="password" maxlength="1" class="pin-digit" inputmode="numeric" autocomplete="off">
+        <input type="password" maxlength="1" class="pin-digit" inputmode="numeric" autocomplete="off">
+        <input type="password" maxlength="1" class="pin-digit" inputmode="numeric" autocomplete="off">
+      </div>
+
+      <button class="btn btn-yellow btn-lg" id="btnUnlock" style="width: 100%;">
+        🔓 Desbloquear
+      </button>
+
+      <div id="pinErrorMsg" style="color: var(--red); font-size: 0.85rem; margin-top: 12px; display: none;">
+        PIN incorrecto. Reintentá. (PIN de fábrica: <strong>1234</strong>)
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       ENCABEZADO DE LA APLICACIÓN
+       ========================================================================= -->
+  <header class="app-header">
+    <div class="app-header-container">
+      <div class="brand-wrapper">
+        <img src="../images/logo-smart-electric.png" alt="Smart Electric" class="brand-logo">
+        <div class="brand-text">
+          <h1>SMART <span class="highlight">ELECTRIC</span></h1>
+          <p>Cotizador & Presupuestos · Costos CMO Electroinstalador</p>
+        </div>
+      </div>
+
+      <!-- Pestañas de navegación -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="tab-editor" role="tab">
+          ⚡ Cotizador
+        </button>
+        <button class="tab-btn" data-tab="tab-history" role="tab">
+          📁 Historial <span class="badge badge-yellow" id="historyCounter">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-master" role="tab">
+          ⚙️ Precios Maestros (CMO)
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn-lock" id="btnLockApp" title="Bloquear sesión">
+          🔒 Bloquear
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       CONTENIDO PRINCIPAL POR PESTAÑAS
+       ========================================================================= -->
+  <main class="main-content">
+
+    <!-- ---------------------------------------------------------------------
+         PESTAÑA 1: EDITOR DE PRESUPUESTOS
+         --------------------------------------------------------------------- -->
+    <section class="tab-panel active" id="tab-editor">
+
+      <!-- DATOS DE CABECERA Y CLIENTE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📋</span> Datos del Presupuesto y Cliente
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--ink-light);">ESTADO:</label>
+            <select class="form-control" id="budgetStatus" style="width: auto; font-weight: 700;">
+              <option value="Borrador">📝 Borrador</option>
+              <option value="Enviado">📨 Enviado al cliente</option>
+              <option value="Aprobado">✅ Aprobado</option>
+              <option value="Cobrado">💰 Cobrado / Finalizado</option>
+              <option value="Rechazado">❌ Rechazado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="budgetNumber">N° de Presupuesto</label>
+            <input type="text" class="form-control" id="budgetNumber" style="font-weight: 700;" placeholder="SE-2026-001">
+          </div>
+
+          <div class="form-group">
+            <label for="budgetDate">Fecha de Emisión</label>
+            <input type="date" class="form-control" id="budgetDate">
+          </div>
+
+          <div class="form-group">
+            <label for="budgetValidity">Validez de la Oferta</label>
+            <select class="form-control" id="budgetValidity">
+              <option value="7">7 días corridos</option>
+              <option value="10" selected>10 días corridos</option>
+              <option value="15">15 días corridos</option>
+              <option value="30">30 días corridos</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="clientName">Nombre del Cliente / Empresa</label>
+            <input type="text" class="form-control" id="clientName" placeholder="Ej: Juan Pérez / Estudio Arq.">
+          </div>
+
+          <div class="form-group">
+            <label for="clientPhone">Teléfono / WhatsApp</label>
+            <input type="tel" class="form-control" id="clientPhone" placeholder="Ej: 3416219609">
+          </div>
+
+          <div class="form-group">
+            <label for="clientLocation">Localidad / Zona</label>
+            <input type="text" class="form-control" id="clientLocation" list="localidadesList" placeholder="Rosario">
+            <datalist id="localidadesList">
+              <option value="Rosario">
+              <option value="Funes">
+              <option value="Roldán">
+              <option value="Ibarlucea">
+              <option value="Granadero Baigorria">
+              <option value="San Lorenzo">
+            </datalist>
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="clientAddress">Dirección de la Obra / Referencia</label>
+            <input type="text" class="form-control" id="clientAddress" placeholder="Ej: Bv. Oroño 1234, Piso 4 / Barrio Cerrado Los Pasos">
+          </div>
+        </div>
+      </div>
+
+      <!-- AGREGAR ÍTEMS DESDE EL CATÁLOGO CMO O MANUALMENTE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>⚡</span> Ítems y Tareas de Mano de Obra
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btnOpenCustomItemModal">
+            ➕ Agregar Ítem Personalizado
+          </button>
+        </div>
+
+        <!-- Barra de selección rápida del CMO -->
+        <div class="add-bar-grid">
+          <div class="form-group">
+            <label for="cmoCategoryFilter">Rubro / Categoría</label>
+            <select class="form-control" id="cmoCategoryFilter">
+              <option value="ALL">Todas las categorías</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="cmoItemSelect">Seleccionar tarea del listado CMO</label>
+            <select class="form-control" id="cmoItemSelect">
+              <option value="">Seleccione una tarea...</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" id="btnAddCmoItem" style="height: 42px;">
+            ➕ Agregar
+          </button>
+        </div>
+
+        <!-- TABLA DE ÍTEMS DEL PRESUPUESTO -->
+        <div class="table-responsive">
+          <table class="budget-table" id="budgetItemsTable">
+            <thead>
+              <tr>
+                <th style="width: 18%;">Rubro</th>
+                <th>Descripción de la Tarea / Material</th>
+                <th style="width: 10%; text-align: center;">Cantidad</th>
+                <th style="width: 10%;">Unidad</th>
+                <th style="width: 14%; text-align: right;">P. Unitario ($)</th>
+                <th style="width: 14%; text-align: right;">Subtotal ($)</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="budgetItemsBody">
+              <!-- Render dinámico de ítems -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="emptyTableMessage" style="text-align: center; padding: 24px; color: var(--ink-light); font-size: 0.95rem;">
+          No hay tareas agregadas en este presupuesto. Seleccioná una tarea del catálogo o hacé clic en "Agregar Ítem Personalizado".
+        </div>
+
+        <!-- RESUMEN DE TOTALES -->
+        <div class="totals-section">
+          <div class="totals-card">
+            <div class="totals-row">
+              <span>Subtotal Mano de Obra:</span>
+              <strong id="summarySubtotal">$ 0</strong>
+            </div>
+
+            <div class="totals-row">
+              <span style="display:flex; align-items:center; gap:6px;">
+                Ajuste / Descuento (%):
+                <input type="number" id="discountPercent" class="form-control" style="width: 70px; padding: 2px 6px; text-align: right;" value="0" step="1">
+              </span>
+              <strong id="summaryDiscount" style="color: var(--ink-light);">$ 0</strong>
+            </div>
+
+            <div class="totals-row">
+              <span style="display:flex; align-items:center; gap:6px;">
+                Materiales / Adicionales ($):
+                <input type="number" id="materialsAmount" class="form-control" style="width: 120px; padding: 2px 6px; text-align: right;" value="0" step="500">
+              </span>
+              <strong id="summaryMaterials">$ 0</strong>
+            </div>
+
+            <div class="totals-row grand-total">
+              <span>TOTAL ESTIMADO:</span>
+              <span class="total-amount" id="summaryGrandTotal">$ 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONDICIONES Y NOTAS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📝</span> Condiciones Comerciales & Observaciones
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btnResetTerms">
+            ↺ Restaurar texto predeterminado
+          </button>
+        </div>
+
+        <div class="form-group">
+          <textarea class="form-control" id="budgetNotes" rows="4" style="font-family: inherit; font-size: 0.88rem;"></textarea>
+        </div>
+      </div>
+
+      <!-- BARRA DE ACCIONES INFERIOR -->
+      <div class="actions-bar">
+        <div class="actions-group">
+          <button class="btn btn-secondary" id="btnNewBudget">
+            📄 Nuevo / Limpiar
+          </button>
+          <button class="btn btn-primary" id="btnSaveBudget">
+            💾 Guardar Presupuesto
+          </button>
+        </div>
+
+        <div class="actions-group">
+          <button class="btn btn-yellow btn-lg" id="btnPrintPdf">
+            🖨️ Ver / Imprimir PDF
+          </button>
+          <button class="btn btn-green btn-lg" id="btnSendWhatsapp">
+            📲 Compartir por WhatsApp
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ---------------------------------------------------------------------
+         PESTAÑA 2: HISTORIAL DE PRESUPUESTOS GUARDADOS
+         --------------------------------------------------------------------- -->
+    <section class="tab-panel" id="tab-history">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📁</span> Historial de Presupuestos Emitidos
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" id="btnExportBackup">
+              ⬇️ Descargar Copia de Seguridad (JSON)
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnImportBackup">
+              ⬆️ Restaurar Copia de Seguridad
+            </button>
+            <input type="file" id="importBackupInput" accept=".json" style="display: none;">
+          </div>
+        </div>
+
+        <!-- FILTROS DE BÚSQUEDA -->
+        <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+          <input type="text" class="form-control" id="searchHistoryInput" placeholder="Buscar por cliente, dirección o N° de presupuesto..." style="flex: 1; min-width: 250px;">
+          <select class="form-control" id="filterStatusSelect" style="width: 200px;">
+            <option value="ALL">Todos los estados</option>
+            <option value="Borrador">Borrador</option>
+            <option value="Enviado">Enviado</option>
+            <option value="Aprobado">Aprobado</option>
+            <option value="Cobrado">Cobrado</option>
+            <option value="Rechazado">Rechazado</option>
+          </select>
+        </div>
+
+        <!-- TABLA DE HISTORIAL -->
+        <div class="table-responsive">
+          <table class="budget-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">N° Presupuesto</th>
+                <th style="width: 12%;">Fecha</th>
+                <th>Cliente</th>
+                <th>Localidad</th>
+                <th style="text-align: right; width: 15%;">Total</th>
+                <th style="width: 12%; text-align: center;">Estado</th>
+                <th style="width: 240px; text-align: center;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Render dinámico del historial -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="emptyHistoryMessage" style="text-align: center; padding: 30px; color: var(--ink-light); display: none;">
+          No se encontraron presupuestos en el historial.
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------------
+         PESTAÑA 3: CONFIGURACIÓN DE PRECIOS MAESTROS (CMO)
+         --------------------------------------------------------------------- -->
+    <section class="tab-panel" id="tab-master">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>⚙️</span> Catálogo Maestro de Costos de Mano de Obra (CMO)
+          </div>
+
+          <div class="master-header-actions">
+            <!-- AUMENTO MASIVO POR INFLACIÓN -->
+            <div class="inflation-box">
+              <label for="inflationPercent" style="font-size: 0.8rem; font-weight: 700;">Ajuste Inflación:</label>
+              <input type="number" id="inflationPercent" value="10" step="1">
+              <span style="font-weight: 700;">%</span>
+              <button class="btn btn-yellow btn-sm" id="btnApplyInflation">
+                🚀 Aplicar a Todo
+              </button>
+            </div>
+
+            <button class="btn btn-secondary btn-sm" id="btnResetMasterCmo">
+              ↺ Restablecer original Electroinstalador
+            </button>
+          </div>
+        </div>
+
+        <p style="font-size: 0.88rem; color: var(--ink-light); margin-bottom: 16px;">
+          Podés editar los precios base directamente en la tabla. Cada vez que generes una nueva cotización, tomará estos valores actualizados. Los precios modificados se guardan automáticamente en tu dispositivo.
+        </p>
+
+        <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+          <input type="text" class="form-control" id="searchMasterCmo" placeholder="Filtrar por tarea o palabra clave..." style="flex: 1; min-width: 250px;">
+          <select class="form-control" id="filterMasterCategory" style="width: 240px;">
+            <option value="ALL">Todas las categorías</option>
+          </select>
+          <button class="btn btn-primary" id="btnOpenNewMasterItemModal">
+            ➕ Nuevo Ítem Maestro
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="budget-table">
+            <thead>
+              <tr>
+                <th style="width: 18%;">Categoría</th>
+                <th>Descripción de la Tarea</th>
+                <th style="width: 10%;">Unidad</th>
+                <th style="width: 18%; text-align: right;">Precio Base ($ ARS)</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="masterCmoTableBody">
+              <!-- Render dinámico del catálogo maestro -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AJUSTES DE SEGURIDAD (CAMBIAR PIN) -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🔐</span> Seguridad y Clave de Acceso
+          </div>
+        </div>
+
+        <div style="max-width: 400px; display: flex; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label for="newPinInput">Nuevo PIN de 4 dígitos</label>
+            <input type="password" maxlength="4" class="form-control" id="newPinInput" placeholder="Ej: 4567" style="font-size: 1.2rem; letter-spacing: 4px;">
+          </div>
+          <button class="btn btn-secondary" id="btnChangePin">
+            Actualizar PIN de Seguridad
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL: AGREGAR ÍTEM PERSONALIZADO AL PRESUPUESTO ACTUAL
+       ========================================================================= -->
+  <div class="modal-overlay" id="customItemModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 style="font-size: 1.1rem; color: var(--navy);">➕ Agregar Ítem Personalizado</h3>
+        <button class="btn-icon" onclick="document.getElementById('customItemModal').classList.remove('open')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Rubro / Categoría</label>
+          <input type="text" class="form-control" id="customItemCategory" value="Trabajos Especiales">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Descripción de la Tarea o Servicio</label>
+          <textarea class="form-control" id="customItemDesc" rows="3" placeholder="Ej: Adecuación de acometida y canalización exterior en caño galvanizado"></textarea>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Cantidad</label>
+            <input type="number" class="form-control" id="customItemQty" value="1" min="0.1" step="any">
+          </div>
+          <div class="form-group">
+            <label>Unidad de Medida</label>
+            <input type="text" class="form-control" id="customItemUnit" list="unitsList" value="Global">
+            <datalist id="unitsList">
+              <option value="Global">
+              <option value="Boca">
+              <option value="Unidad">
+              <option value="Metro">
+              <option value="Hora">
+              <option value="Servicio">
+              <option value="Informe">
+            </datalist>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Precio Unitario ($ ARS)</label>
+            <input type="number" class="form-control" id="customItemPrice" placeholder="0" step="500">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="document.getElementById('customItemModal').classList.remove('open')">Cancelar</button>
+        <button class="btn btn-primary" id="btnConfirmCustomItem">Agregar al Presupuesto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: AGREGAR NUEVO ÍTEM MAESTRO AL CATÁLOGO
+       ========================================================================= -->
+  <div class="modal-overlay" id="masterItemModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 style="font-size: 1.1rem; color: var(--navy);">➕ Agregar Ítem al Catálogo Maestro</h3>
+        <button class="btn-icon" onclick="document.getElementById('masterItemModal').classList.remove('open')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Categoría</label>
+          <input type="text" class="form-control" id="masterNewCategory" placeholder="Ej: Tableros Eléctricos">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Descripción de la Tarea</label>
+          <textarea class="form-control" id="masterNewDesc" rows="3" placeholder="Descripción detallada..."></textarea>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Unidad de Medida</label>
+            <input type="text" class="form-control" id="masterNewUnit" value="Unidad">
+          </div>
+          <div class="form-group">
+            <label>Precio Base de Referencia ($ ARS)</label>
+            <input type="number" class="form-control" id="masterNewPrice" placeholder="0" step="500">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="document.getElementById('masterItemModal').classList.remove('open')">Cancelar</button>
+        <button class="btn btn-primary" id="btnConfirmMasterItem">Guardar en Catálogo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       ÁREA EXCLUSIVA DE IMPRESIÓN (PDF HOJA A4)
+       ========================================================================= -->
+  <div id="printArea">
+    <!-- Membrete -->
+    <div class="print-header">
+      <div class="print-brand">
+        <img src="../images/logo-smart-electric.png" alt="Smart Electric Logo" class="print-logo">
+        <div>
+          <div class="print-brand-title">Smart Electric</div>
+          <div class="print-brand-sub">Instalaciones Eléctricas Profesionales · Domótica & Tableros</div>
+          <div class="print-brand-sub" style="color: #666;">Rosario · Funes · Roldán · Ibarlucea</div>
+        </div>
+      </div>
+      <div class="print-doc-info">
+        <div class="print-doc-badge">PRESUPUESTO</div>
+        <div class="print-doc-meta"><strong id="printNumber">#SE-000</strong></div>
+        <div class="print-doc-meta">Fecha: <span id="printDate">--/--/----</span></div>
+        <div class="print-doc-meta">Validez: <span id="printValidity">10 días</span></div>
+      </div>
+    </div>
+
+    <!-- Ficha del Cliente y Obra -->
+    <div class="print-client-box">
+      <div>
+        <div><strong>Cliente:</strong> <span id="printClientName">--</span></div>
+        <div><strong>Teléfono:</strong> <span id="printClientPhone">--</span></div>
+      </div>
+      <div>
+        <div><strong>Localidad:</strong> <span id="printClientLocation">Rosario</span></div>
+        <div><strong>Dirección:</strong> <span id="printClientAddress">--</span></div>
+      </div>
+    </div>
+
+    <!-- Tabla de Ítems Presupuestados -->
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width: 50%;">Detalle de Mano de Obra y Servicios</th>
+          <th style="width: 12%; text-align: center;">Cantidad</th>
+          <th style="width: 12%; text-align: center;">Unidad</th>
+          <th style="width: 13%; text-align: right;">P. Unitario</th>
+          <th style="width: 13%; text-align: right;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="printItemsTableBody">
+        <!-- Render dinámico -->
+      </tbody>
+    </table>
+
+    <!-- Totales -->
+    <div class="print-totals-box">
+      <table class="print-totals-table">
+        <tr id="printRowSubtotal">
+          <td>Subtotal Mano de Obra:</td>
+          <td style="text-align: right; font-weight: 700;" id="printSubtotal">$ 0</td>
+        </tr>
+        <tr id="printRowDiscount" style="display: none;">
+          <td>Descuento aplicado:</td>
+          <td style="text-align: right; color: #666;" id="printDiscount">-$ 0</td>
+        </tr>
+        <tr id="printRowMaterials" style="display: none;">
+          <td>Materiales / Adicionales:</td>
+          <td style="text-align: right;" id="printMaterials">$ 0</td>
+        </tr>
+        <tr class="total-row">
+          <td>TOTAL PRESUPUESTO:</td>
+          <td style="text-align: right;" id="printGrandTotal">$ 0</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Términos y Condiciones -->
+    <div class="print-terms">
+      <h4>Condiciones Generales del Servicio:</h4>
+      <div id="printTermsText" style="white-space: pre-line;"></div>
+    </div>
+
+    <!-- Firmas -->
+    <div class="print-signature-area">
+      <div class="print-sign-line">
+        <strong>Smart Electric</strong><br>
+        Técnico Electricista Matriculado
+      </div>
+      <div class="print-sign-line">
+        <strong>Conformidad del Cliente</strong><br>
+        Firma y Aclaración
+      </div>
+    </div>
+
+    <!-- Pie de página impreso -->
+    <div class="print-footer-banner">
+      Smart Electric · WhatsApp: +54 341 621-9609 · Instagram: @SmartElectricAr · Documento de presupuesto no válido como factura fiscal.
+    </div>
+  </div>
+
+  <!-- Contenedor de notificaciones Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="cmo-data.js"></script>
+  <script src="cotizador.js"></script>
+</body>
+
+</html>
+
