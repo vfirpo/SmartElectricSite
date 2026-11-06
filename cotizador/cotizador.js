@@ -13,7 +13,7 @@
     LAST_NUMBER: 'smartelectric_last_budget_num_v1'
   };
 
-  const DEFAULT_PIN = '1234';
+  const DEFAULT_PIN = '0301';
 
   const DEFAULT_TERMS = 
 `• Los precios cotizados corresponden exclusivamente a Mano de Obra técnica especializada.
