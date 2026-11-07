@@ -1,5 +1,6 @@
 /**
  * SMART ELECTRIC - LÓGICA PRINCIPAL DEL COTIZADOR Y HISTORIAL
+ * Incluye Relevamiento Fotográfico (Opción B: 2x2), Compresión de Imágenes en Canvas y Persistencia en IndexedDB.
  */
 
 (function () {
@@ -13,7 +14,7 @@
     LAST_NUMBER: 'smartelectric_last_budget_num_v1'
   };
 
-  const DEFAULT_PIN = '0301';
+  const DEFAULT_PIN = '1234';
 
   const DEFAULT_TERMS = 
 `• Los precios cotizados corresponden exclusivamente a Mano de Obra técnica especializada.
@@ -35,6 +36,7 @@
       location: 'Rosario',
       address: ''
     },
+    diagnostics: [], // Array de { id, title, criticidad, description, imageDataUrl, origKb, compKb }
     items: [],
     discountPercent: 0,
     materialsAmount: 0,
@@ -42,7 +44,149 @@
   };
 
   // =========================================================================
-  // 1. SISTEMA DE SEGURIDAD Y BLOQUEO POR PIN
+  // 1. CAPA DE ALMACENAMIENTO INDEXEDDB (CAPACIDAD ILIMITADA PARA FOTOS Y HISTORIAL)
+  // =========================================================================
+  const StorageDB = {
+    DB_NAME: 'SmartElectricDB',
+    DB_VERSION: 1,
+    STORE_NAME: 'budgets',
+    db: null,
+    cache: [],
+
+    async init() {
+      return new Promise((resolve) => {
+        if (!window.indexedDB) {
+          this.loadFromLocalStorage();
+          resolve();
+          return;
+        }
+
+        const req = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(this.STORE_NAME)) {
+            db.createObjectStore(this.STORE_NAME, { keyPath: 'id' });
+          }
+        };
+
+        req.onsuccess = async (e) => {
+          this.db = e.target.result;
+          await this.loadAll();
+
+          // Migración transparente si había presupuestos previos en localStorage
+          try {
+            const oldData = localStorage.getItem(STORAGE_KEYS.BUDGETS);
+            if (oldData) {
+              const oldBudgets = JSON.parse(oldData);
+              if (Array.isArray(oldBudgets) && oldBudgets.length > 0) {
+                for (const b of oldBudgets) {
+                  if (!this.cache.some(c => c.id === b.id)) {
+                    await this.save(b);
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Error en migración inicial', err);
+          }
+          resolve();
+        };
+
+        req.onerror = () => {
+          console.warn('No se pudo abrir IndexedDB, usando fallback LocalStorage');
+          this.loadFromLocalStorage();
+          resolve();
+        };
+      });
+    },
+
+    loadFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.BUDGETS);
+        this.cache = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        this.cache = [];
+      }
+    },
+
+    async loadAll() {
+      if (!this.db) {
+        this.loadFromLocalStorage();
+        return this.cache;
+      }
+      return new Promise((resolve) => {
+        const tx = this.db.transaction(this.STORE_NAME, 'readonly');
+        const store = tx.objectStore(this.STORE_NAME);
+        const req = store.getAll();
+        req.onsuccess = () => {
+          this.cache = req.result || [];
+          // Ordenar por fecha descendente
+          this.cache.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+          resolve(this.cache);
+        };
+        req.onerror = () => {
+          this.loadFromLocalStorage();
+          resolve(this.cache);
+        };
+      });
+    },
+
+    async save(budget) {
+      const idx = this.cache.findIndex(b => b.id === budget.id);
+      if (idx !== -1) {
+        this.cache[idx] = budget;
+      } else {
+        this.cache.unshift(budget);
+      }
+
+      if (this.db) {
+        return new Promise((resolve) => {
+          const tx = this.db.transaction(this.STORE_NAME, 'readwrite');
+          const store = tx.objectStore(this.STORE_NAME);
+          store.put(budget);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } else {
+        try {
+          localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify(this.cache));
+        } catch (e) {
+          console.warn('LocalStorage excedido de memoria', e);
+        }
+        return true;
+      }
+    },
+
+    async delete(id) {
+      this.cache = this.cache.filter(b => b.id !== id);
+      if (this.db) {
+        return new Promise((resolve) => {
+          const tx = this.db.transaction(this.STORE_NAME, 'readwrite');
+          const store = tx.objectStore(this.STORE_NAME);
+          store.delete(id);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } else {
+        try {
+          localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify(this.cache));
+        } catch (e) {}
+        return true;
+      }
+    },
+
+    getAll() {
+      return this.cache;
+    }
+  };
+
+  function getSavedBudgets() {
+    return StorageDB.getAll();
+  }
+
+  // =========================================================================
+  // 2. SISTEMA DE SEGURIDAD Y BLOQUEO POR PIN
   // =========================================================================
   function initPinSecurity() {
     const pinOverlay = document.getElementById('pinLockScreen');
@@ -53,7 +197,6 @@
     const btnChangePin = document.getElementById('btnChangePin');
     const newPinInput = document.getElementById('newPinInput');
 
-    // Comprobar si ya está desbloqueado en esta sesión
     if (sessionStorage.getItem(STORAGE_KEYS.SESSION) === 'true') {
       pinOverlay.style.display = 'none';
     } else {
@@ -61,7 +204,6 @@
       if (pinInputs[0]) pinInputs[0].focus();
     }
 
-    // Navegación automática entre dígitos
     pinInputs.forEach((input, index) => {
       input.addEventListener('input', (e) => {
         if (e.target.value.length === 1 && index < pinInputs.length - 1) {
@@ -97,7 +239,6 @@
       }
     }
 
-    // Botón bloquear sesión
     btnLockApp.addEventListener('click', () => {
       sessionStorage.removeItem(STORAGE_KEYS.SESSION);
       pinOverlay.style.display = 'flex';
@@ -105,7 +246,6 @@
       if (pinInputs[0]) pinInputs[0].focus();
     });
 
-    // Cambiar PIN
     btnChangePin.addEventListener('click', () => {
       const val = newPinInput.value.trim();
       if (/^\d{4}$/.test(val)) {
@@ -119,7 +259,7 @@
   }
 
   // =========================================================================
-  // 2. NAVEGACIÓN POR PESTAÑAS
+  // 3. NAVEGACIÓN POR PESTAÑAS
   // =========================================================================
   function initTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
@@ -148,7 +288,7 @@
   }
 
   // =========================================================================
-  // 3. UTILIDADES DE FORMATO Y MONEDA
+  // 4. UTILIDADES DE FORMATO Y MONEDA
   // =========================================================================
   function formatMoney(amount) {
     const val = Number(amount) || 0;
@@ -183,30 +323,196 @@
   }
 
   // =========================================================================
-  // 4. GESTIÓN DEL FORMULARIO Y TABLA DE ÍTEMS
+  // 5. MOTOR DE COMPRESIÓN Y REESCALADO DE IMÁGENES (HTML5 CANVAS)
+  // =========================================================================
+  function compressImageFile(file, maxDimension = 960, quality = 0.72) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          // Reescalar proporcionalmente al tamaño óptimo para impresión A4
+          if (width > height) {
+            if (width > maxDimension) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            }
+          } else {
+            if (height > maxDimension) {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compresión a JPEG
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          const origKb = Math.round(file.size / 1024);
+          const compKb = Math.round((dataUrl.length * 3 / 4) / 1024);
+
+          resolve({
+            dataUrl,
+            width,
+            height,
+            origKb,
+            compKb
+          });
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  }
+
+  // =========================================================================
+  // 6. GESTIÓN DEL RELEVAMIENTO FOTOGRÁFICO Y DIAGNÓSTICO
+  // =========================================================================
+  function initDiagnosticControls() {
+    const fileInput = document.getElementById('diagnosticFileInput');
+    if (!fileInput) return;
+
+    fileInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) return;
+
+      showToast(`Procesando ${files.length} imagen(es)...`);
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const comp = await compressImageFile(file);
+          const diagItem = {
+            id: 'diag-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+            title: `Hallazgo #${currentBudget.diagnostics.length + 1}`,
+            criticidad: '',
+            description: '',
+            imageDataUrl: comp.dataUrl,
+            origKb: comp.origKb,
+            compKb: comp.compKb
+          };
+          currentBudget.diagnostics.push(diagItem);
+        } catch (err) {
+          console.error('Error al procesar foto', err);
+          alert('Hubo un problema al procesar la imagen ' + file.name);
+        }
+      }
+
+      renderDiagnosticCards();
+      fileInput.value = '';
+      showToast('Fotografías optimizadas y agregadas al presupuesto.');
+    });
+  }
+
+  function renderDiagnosticCards() {
+    const container = document.getElementById('diagnosticCardsContainer');
+    const emptyNotice = document.getElementById('diagnosticEmptyNotice');
+    if (!container || !emptyNotice) return;
+
+    container.innerHTML = '';
+
+    if (!currentBudget.diagnostics || currentBudget.diagnostics.length === 0) {
+      emptyNotice.style.display = 'block';
+      return;
+    }
+
+    emptyNotice.style.display = 'none';
+
+    currentBudget.diagnostics.forEach((diag, index) => {
+      const card = document.createElement('div');
+      card.className = 'diagnostic-card-editor';
+
+      const ratioSaved = diag.origKb > 0 ? Math.round((1 - (diag.compKb / diag.origKb)) * 100) : 0;
+      const sizeText = diag.origKb > 0 
+        ? `${diag.origKb} KB ➔ ${diag.compKb} KB (-${ratioSaved}%)` 
+        : `${diag.compKb} KB`;
+
+      card.innerHTML = `
+        <div class="diag-thumb-box">
+          <img src="${diag.imageDataUrl}" alt="Diagnóstico">
+          <span class="diag-size-badge" title="Optimización automática">${sizeText}</span>
+          <button class="diag-delete-btn" data-delete-diag="${index}" title="Eliminar foto">✕</button>
+        </div>
+
+        <div class="diag-fields">
+          <div class="form-group">
+            <label style="font-size: 0.76rem;">Título del Hallazgo / Ubicación</label>
+            <input type="text" class="form-control" value="${escapeHtml(diag.title)}" data-diag-field="title" data-index="${index}" placeholder="Ej: Tablero Principal - Cables recalentados">
+          </div>
+
+          <div class="form-group">
+            <label style="font-size: 0.76rem;">Nivel de Criticidad (Opcional)</label>
+            <select class="form-control" data-diag-field="criticidad" data-index="${index}">
+              <option value="" ${diag.criticidad === '' ? 'selected' : ''}>Sin especificar (General)</option>
+              <option value="🔴 Riesgo Eléctrico Alto" ${diag.criticidad === '🔴 Riesgo Eléctrico Alto' ? 'selected' : ''}>🔴 Riesgo Eléctrico Alto / Peligro Inminente</option>
+              <option value="⚠️ Fuera de Norma AEA" ${diag.criticidad === '⚠️ Fuera de Norma AEA' ? 'selected' : ''}>⚠️ Fuera de Norma AEA / Observación Crítica</option>
+              <option value="ℹ️ Recomendación de Mejora" ${diag.criticidad === 'ℹ️ Recomendación de Mejora' ? 'selected' : ''}>ℹ️ Recomendación de Mejora / Preventivo</option>
+              <option value="✅ Trabajo / Adecuación Prevista" ${diag.criticidad === '✅ Trabajo / Adecuación Prevista' ? 'selected' : ''}>✅ Trabajo / Adecuación Prevista</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label style="font-size: 0.76rem;">Diagnóstico Técnico / Observación Libre</label>
+            <textarea class="form-control" rows="2" data-diag-field="description" data-index="${index}" placeholder="Descripción del problema, riesgo y acción recomendada...">${escapeHtml(diag.description || '')}</textarea>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+    // Listeners de edición en línea
+    container.querySelectorAll('[data-diag-field]').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        const field = e.target.getAttribute('data-diag-field');
+        if (currentBudget.diagnostics[idx]) {
+          currentBudget.diagnostics[idx][field] = e.target.value;
+        }
+      });
+    });
+
+    // Listeners para eliminar foto
+    container.querySelectorAll('[data-delete-diag]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.currentTarget.getAttribute('data-delete-diag'), 10);
+        currentBudget.diagnostics.splice(idx, 1);
+        renderDiagnosticCards();
+        showToast('Foto eliminada del presupuesto.');
+      });
+    });
+  }
+
+  // =========================================================================
+  // 7. GESTIÓN DEL FORMULARIO Y TABLA DE ÍTEMS
   // =========================================================================
   function initBudgetForm() {
-    // Inicializar valores de fecha y número
     document.getElementById('budgetDate').value = currentBudget.date;
     document.getElementById('budgetValidity').value = currentBudget.validity;
     document.getElementById('budgetNumber').value = generateNextBudgetNumber();
     document.getElementById('budgetNotes').value = DEFAULT_TERMS;
 
-    // Llenar selector de categorías CMO
     populateCmoSelectors();
+    initDiagnosticControls();
 
-    // Eventos de cambios en campos de totales
     document.getElementById('discountPercent').addEventListener('input', recalculateTotals);
     document.getElementById('materialsAmount').addEventListener('input', recalculateTotals);
 
-    // Restaurar términos por defecto
     document.getElementById('btnResetTerms').addEventListener('click', () => {
       if (confirm('¿Restablecer las condiciones al texto estándar?')) {
         document.getElementById('budgetNotes').value = DEFAULT_TERMS;
       }
     });
 
-    // Botón agregar ítem del CMO
     document.getElementById('btnAddCmoItem').addEventListener('click', () => {
       const select = document.getElementById('cmoItemSelect');
       const itemId = select.value;
@@ -232,7 +538,6 @@
       showToast(`Agregado: ${item.descripcion.substring(0, 30)}...`);
     });
 
-    // Modal Ítem Personalizado
     const customModal = document.getElementById('customItemModal');
     document.getElementById('btnOpenCustomItemModal').addEventListener('click', () => {
       document.getElementById('customItemDesc').value = '';
@@ -268,7 +573,6 @@
       showToast('Ítem personalizado agregado.');
     });
 
-    // Botones de acción principales
     document.getElementById('btnSaveBudget').addEventListener('click', saveCurrentBudget);
     document.getElementById('btnNewBudget').addEventListener('click', resetBudgetForm);
     document.getElementById('btnPrintPdf').addEventListener('click', triggerPrintPreview);
@@ -281,7 +585,6 @@
     const categories = CMOManager.getCategories();
     const catalog = CMOManager.getCatalog();
 
-    // Llenar categorías
     catSelect.innerHTML = '<option value="ALL">Todas las categorías</option>';
     categories.forEach(cat => {
       const opt = document.createElement('option');
@@ -358,7 +661,6 @@
       tbody.appendChild(tr);
     });
 
-    // Eventos de edición inline
     tbody.querySelectorAll('.inline-input').forEach(input => {
       input.addEventListener('change', (e) => {
         const idx = parseInt(e.target.getAttribute('data-index'), 10);
@@ -377,7 +679,6 @@
       });
     });
 
-    // Eventos de eliminación
     tbody.querySelectorAll('[data-delete-index]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const idx = parseInt(e.currentTarget.getAttribute('data-delete-index'), 10);
@@ -406,7 +707,7 @@
   }
 
   function resetBudgetForm() {
-    if (currentBudget.items.length > 0 && !confirm('¿Deseás iniciar un nuevo presupuesto y limpiar los datos actuales?')) {
+    if ((currentBudget.items.length > 0 || currentBudget.diagnostics.length > 0) && !confirm('¿Deseás iniciar un nuevo presupuesto y limpiar los datos actuales?')) {
       return;
     }
 
@@ -422,6 +723,7 @@
         location: 'Rosario',
         address: ''
       },
+      diagnostics: [],
       items: [],
       discountPercent: 0,
       materialsAmount: 0,
@@ -440,36 +742,16 @@
     document.getElementById('materialsAmount').value = 0;
     document.getElementById('budgetNotes').value = DEFAULT_TERMS;
 
+    renderDiagnosticCards();
     renderBudgetTable();
     recalculateTotals();
     showToast('Formulario reiniciado para una nueva cotización.');
   }
 
   // =========================================================================
-  // 5. GUARDAR Y GESTIONAR HISTORIAL
+  // 8. GUARDAR Y GESTIONAR HISTORIAL (INDEXEDDB)
   // =========================================================================
-  function getSavedBudgets() {
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.BUDGETS);
-      return data ? JSON.parse(data) : [];
-    } catch (e) {
-      console.error('Error al leer historial', e);
-      return [];
-    }
-  }
-
-  function saveBudgetsToStorage(budgets) {
-    try {
-      localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify(budgets));
-      updateHistoryCounter();
-      return true;
-    } catch (e) {
-      console.error('Error al guardar historial', e);
-      return false;
-    }
-  }
-
-  function saveCurrentBudget() {
+  async function saveCurrentBudget() {
     const clientName = document.getElementById('clientName').value.trim();
     if (!clientName) {
       alert('Por favor ingresá el nombre del cliente o empresa.');
@@ -482,7 +764,6 @@
       return;
     }
 
-    // Actualizar datos del estado
     currentBudget.number = document.getElementById('budgetNumber').value.trim() || generateNextBudgetNumber();
     currentBudget.date = document.getElementById('budgetDate').value;
     currentBudget.validity = parseInt(document.getElementById('budgetValidity').value, 10) || 10;
@@ -499,21 +780,15 @@
     const disc = Math.round(subtotal * (currentBudget.discountPercent / 100));
     currentBudget.grandTotal = Math.max(0, (subtotal - disc) + currentBudget.materialsAmount);
 
-    let budgets = getSavedBudgets();
-
     if (!currentBudget.id) {
       currentBudget.id = 'bud-' + Date.now().toString(36);
-      budgets.unshift(currentBudget);
-    } else {
-      const idx = budgets.findIndex(b => b.id === currentBudget.id);
-      if (idx !== -1) {
-        budgets[idx] = JSON.parse(JSON.stringify(currentBudget));
-      } else {
-        budgets.unshift(currentBudget);
-      }
     }
 
-    saveBudgetsToStorage(budgets);
+    // Clonar para guardar sin referencias vivas
+    const toSave = JSON.parse(JSON.stringify(currentBudget));
+    await StorageDB.save(toSave);
+
+    updateHistoryCounter();
     showToast(`Presupuesto ${currentBudget.number} guardado en el historial.`);
   }
 
@@ -551,9 +826,13 @@
     filtered.forEach(b => {
       const tr = document.createElement('tr');
       const statusClass = 'status-' + (b.status || 'borrador').toLowerCase();
+      const hasPhotos = Array.isArray(b.diagnostics) && b.diagnostics.length > 0;
 
       tr.innerHTML = `
-        <td><strong style="color: var(--navy);">${escapeHtml(b.number)}</strong></td>
+        <td>
+          <strong style="color: var(--navy);">${escapeHtml(b.number)}</strong>
+          ${hasPhotos ? `<span title="${b.diagnostics.length} foto(s) de diagnóstico" style="font-size: 0.8rem; margin-left: 4px;">📸(${b.diagnostics.length})</span>` : ''}
+        </td>
         <td>${b.date || '--'}</td>
         <td><strong>${escapeHtml(b.client?.name || 'Sin nombre')}</strong></td>
         <td>${escapeHtml(b.client?.location || '-')}</td>
@@ -577,7 +856,6 @@
       tbody.appendChild(tr);
     });
 
-    // Asignar listeners a botones de la tabla
     tbody.querySelectorAll('[data-load-id]').forEach(btn => {
       btn.addEventListener('click', (e) => loadBudgetToEditor(e.currentTarget.getAttribute('data-load-id')));
     });
@@ -616,6 +894,9 @@
     if (!b) return;
 
     currentBudget = JSON.parse(JSON.stringify(b));
+    if (!Array.isArray(currentBudget.diagnostics)) {
+      currentBudget.diagnostics = [];
+    }
 
     document.getElementById('budgetNumber').value = currentBudget.number || '';
     document.getElementById('budgetDate').value = currentBudget.date || '';
@@ -629,10 +910,10 @@
     document.getElementById('materialsAmount').value = currentBudget.materialsAmount || 0;
     document.getElementById('budgetNotes').value = currentBudget.notes || DEFAULT_TERMS;
 
+    renderDiagnosticCards();
     renderBudgetTable();
     recalculateTotals();
 
-    // Cambiar a la pestaña del cotizador
     document.querySelector('[data-tab="tab-editor"]').click();
     showToast(`Presupuesto ${currentBudget.number} cargado en el editor.`);
   }
@@ -649,15 +930,19 @@
     copy.status = 'Borrador';
 
     currentBudget = copy;
+    if (!Array.isArray(currentBudget.diagnostics)) {
+      currentBudget.diagnostics = [];
+    }
 
     document.getElementById('budgetNumber').value = currentBudget.number;
     document.getElementById('budgetDate').value = currentBudget.date;
     document.getElementById('budgetStatus').value = 'Borrador';
-    document.getElementById('clientName').value = currentBudget.client?.name + ' (Copia)';
+    document.getElementById('clientName').value = (currentBudget.client?.name || '') + ' (Copia)';
     document.getElementById('clientPhone').value = currentBudget.client?.phone || '';
     document.getElementById('clientLocation').value = currentBudget.client?.location || 'Rosario';
     document.getElementById('clientAddress').value = currentBudget.client?.address || '';
 
+    renderDiagnosticCards();
     renderBudgetTable();
     recalculateTotals();
 
@@ -665,19 +950,18 @@
     showToast(`Presupuesto duplicado como ${currentBudget.number}.`);
   }
 
-  function deleteBudget(id) {
+  async function deleteBudget(id) {
     if (!confirm('¿Estás seguro de eliminar este presupuesto del historial? Esta acción no se puede deshacer.')) {
       return;
     }
-    let budgets = getSavedBudgets();
-    budgets = budgets.filter(b => b.id !== id);
-    saveBudgetsToStorage(budgets);
+    await StorageDB.delete(id);
+    updateHistoryCounter();
     renderHistoryTable();
     showToast('Presupuesto eliminado.');
   }
 
   // =========================================================================
-  // 6. RESPALDO Y RESTAURACIÓN (JSON BACKUP)
+  // 9. RESPALDO Y RESTAURACIÓN (JSON BACKUP)
   // =========================================================================
   function initBackupControls() {
     const btnExport = document.getElementById('btnExportBackup');
@@ -709,22 +993,21 @@
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         try {
           const parsed = JSON.parse(event.target.result);
           if (Array.isArray(parsed.budgets)) {
-            const current = getSavedBudgets();
-            const combined = [...parsed.budgets, ...current];
-            // Eliminar duplicados por id
-            const unique = Array.from(new Map(combined.map(b => [b.id, b])).values());
-            saveBudgetsToStorage(unique);
+            for (const b of parsed.budgets) {
+              await StorageDB.save(b);
+            }
           }
           if (Array.isArray(parsed.cmoCatalog)) {
             CMOManager.saveCatalog(parsed.cmoCatalog);
           }
-          showToast('Copia de seguridad restaurada correctamente.');
+          updateHistoryCounter();
           renderHistoryTable();
           populateCmoSelectors();
+          showToast('Copia de seguridad restaurada correctamente.');
         } catch (err) {
           alert('El archivo no tiene un formato JSON válido.');
         }
@@ -733,13 +1016,12 @@
       fileInput.value = '';
     });
 
-    // Filtros de búsqueda en historial
     document.getElementById('searchHistoryInput').addEventListener('input', renderHistoryTable);
     document.getElementById('filterStatusSelect').addEventListener('change', renderHistoryTable);
   }
 
   // =========================================================================
-  // 7. GESTIÓN DEL CATÁLOGO MAESTRO (CMO)
+  // 10. GESTIÓN DEL CATÁLOGO MAESTRO (CMO)
   // =========================================================================
   function initMasterCmoPanel() {
     const filterCat = document.getElementById('filterMasterCategory');
@@ -774,7 +1056,6 @@
     filterCat.addEventListener('change', renderMasterCmoTable);
     searchInput.addEventListener('input', renderMasterCmoTable);
 
-    // Modal nuevo ítem maestro
     const masterModal = document.getElementById('masterItemModal');
     document.getElementById('btnOpenNewMasterItemModal').addEventListener('click', () => {
       document.getElementById('masterNewDesc').value = '';
@@ -810,7 +1091,6 @@
     const catalog = CMOManager.getCatalog();
     const categories = CMOManager.getCategories();
 
-    // Actualizar select de categorías
     if (filterCat.options.length <= 1) {
       filterCat.innerHTML = '<option value="ALL">Todas las categorías</option>';
       categories.forEach(c => {
@@ -849,7 +1129,6 @@
       tbody.appendChild(tr);
     });
 
-    // Listener para actualización de precio en línea
     tbody.querySelectorAll('.master-price-input').forEach(input => {
       input.addEventListener('change', (e) => {
         const id = e.target.getAttribute('data-item-id');
@@ -860,7 +1139,6 @@
       });
     });
 
-    // Listener para eliminar ítem maestro
     tbody.querySelectorAll('[data-del-master-id]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = e.currentTarget.getAttribute('data-del-master-id');
@@ -875,8 +1153,17 @@
   }
 
   // =========================================================================
-  // 8. GENERACIÓN DE FORMATO IMPRIMIBLE (PDF HOJA A4)
+  // 11. GENERACIÓN DE FORMATO IMPRIMIBLE (PDF HOJA A4) - PROPUESTA B (2x2)
   // =========================================================================
+  function getBadgeClassForCriticidad(criticidad) {
+    if (!criticidad) return '';
+    if (criticidad.includes('Riesgo')) return 'print-badge-danger';
+    if (criticidad.includes('Norma')) return 'print-badge-warning';
+    if (criticidad.includes('Recomendación')) return 'print-badge-info';
+    if (criticidad.includes('Trabajo')) return 'print-badge-success';
+    return 'print-badge-info';
+  }
+
   function fillPrintTemplate(budget) {
     document.getElementById('printNumber').textContent = budget.number || '#SE-000';
     document.getElementById('printDate').textContent = formatDateDisplay(budget.date);
@@ -887,6 +1174,46 @@
     document.getElementById('printClientLocation').textContent = budget.client?.location || 'Rosario';
     document.getElementById('printClientAddress').textContent = budget.client?.address || 'A convenir';
 
+    // RENDER DEL DIAGNÓSTICO FOTOGRÁFICO (PROPUESTA B: 2x2)
+    // REGLA: Si no hay fotos, la sección desaparece por completo
+    const diagSection = document.getElementById('printDiagnosticSection');
+    const diagGrid = document.getElementById('printDiagnosticGrid');
+
+    if (budget.diagnostics && budget.diagnostics.length > 0) {
+      diagSection.style.display = 'block';
+      diagGrid.innerHTML = '';
+
+      budget.diagnostics.forEach(diag => {
+        const card = document.createElement('div');
+        card.className = 'print-diagnostic-card';
+
+        const badgeClass = getBadgeClassForCriticidad(diag.criticidad);
+        const badgeHtml = diag.criticidad 
+          ? `<span class="print-diag-badge ${badgeClass}">${escapeHtml(diag.criticidad)}</span>` 
+          : '';
+
+        const descHtml = diag.description 
+          ? `<div class="print-diag-desc">${escapeHtml(diag.description)}</div>` 
+          : '';
+
+        card.innerHTML = `
+          <div class="print-diag-img-wrap">
+            <img src="${diag.imageDataUrl}" alt="Diagnóstico">
+          </div>
+          <div class="print-diag-body">
+            ${badgeHtml}
+            <div class="print-diag-title">${escapeHtml(diag.title || 'Hallazgo Técnico')}</div>
+            ${descHtml}
+          </div>
+        `;
+        diagGrid.appendChild(card);
+      });
+    } else {
+      diagSection.style.display = 'none';
+      diagGrid.innerHTML = '';
+    }
+
+    // RENDER DE TABLA DE ÍTEMS DE MANO DE OBRA
     const tbody = document.getElementById('printItemsTableBody');
     tbody.innerHTML = '';
 
@@ -939,7 +1266,6 @@
       return;
     }
 
-    // Actualizar datos del estado antes de imprimir
     currentBudget.number = document.getElementById('budgetNumber').value.trim();
     currentBudget.date = document.getElementById('budgetDate').value;
     currentBudget.validity = parseInt(document.getElementById('budgetValidity').value, 10) || 10;
@@ -956,7 +1282,7 @@
   }
 
   // =========================================================================
-  // 9. COMPARTIR POR WHATSAPP
+  // 12. COMPARTIR POR WHATSAPP
   // =========================================================================
   function shareViaWhatsapp() {
     if (currentBudget.items.length === 0) {
@@ -964,7 +1290,6 @@
       return;
     }
 
-    // Asegurar que el estado esté sincronizado
     currentBudget.number = document.getElementById('budgetNumber').value.trim() || generateNextBudgetNumber();
     currentBudget.client = {
       name: document.getElementById('clientName').value.trim() || 'Estimado/a',
@@ -991,6 +1316,11 @@
     }
     msg += `📅 *Fecha:* ${formatDateDisplay(b.date)} · *Validez:* ${b.validity || 10} días\n\n`;
 
+    // Mención a diagnóstico fotográfico si existe
+    if (b.diagnostics && b.diagnostics.length > 0) {
+      msg += `📸 *Relevamiento Fotográfico:* Se adjuntan ${b.diagnostics.length} fotografía(s) de diagnóstico en el informe.\n\n`;
+    }
+
     msg += `🔧 *DETALLE DE TRABAJOS Y MANO DE OBRA:*\n`;
     b.items.forEach((item, i) => {
       msg += `${i + 1}. ${item.descripcion} (${item.cantidad} ${item.unidad}) → ${formatMoney(item.subtotal)}\n`;
@@ -1011,7 +1341,7 @@
 
     let phone = (b.client?.phone || '').replace(/\D/g, '');
     if (phone.length === 10) {
-      phone = '549' + phone; // Prefijo móvil Argentina
+      phone = '549' + phone;
     } else if (phone.length > 0 && !phone.startsWith('54')) {
       phone = '54' + phone;
     }
@@ -1024,7 +1354,7 @@
   }
 
   // =========================================================================
-  // UTILIDADES GENERALES
+  // 13. UTILIDADES GENERALES
   // =========================================================================
   function formatDateDisplay(isoDateStr) {
     if (!isoDateStr) return '--/--/----';
@@ -1046,16 +1376,18 @@
   }
 
   // =========================================================================
-  // INICIALIZACIÓN
+  // 14. INICIALIZACIÓN
   // =========================================================================
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     initPinSecurity();
     initTabs();
     initBudgetForm();
     initBackupControls();
     initMasterCmoPanel();
+
+    // Inicializar IndexedDB y cargar contador
+    await StorageDB.init();
     updateHistoryCounter();
   });
 
 })();
-

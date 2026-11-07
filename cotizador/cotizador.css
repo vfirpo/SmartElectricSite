@@ -698,6 +698,119 @@ textarea.form-control {
 }
 
 /* ==========================================================================
+   EDITOR: RELEVAMIENTO FOTOGRÁFICO & DIAGNÓSTICO
+   ========================================================================== */
+.diagnostic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.diagnostic-card-editor {
+  background: #fbfdff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.diagnostic-card-editor:hover {
+  border-color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.diag-thumb-box {
+  position: relative;
+  width: 100%;
+  height: 170px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #061936;
+}
+
+.diag-thumb-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.diag-size-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(3, 32, 74, 0.85);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  backdrop-filter: blur(2px);
+}
+
+.diag-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(230, 57, 70, 0.9);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.diag-delete-btn:hover {
+  transform: scale(1.1);
+  background: #c52936;
+}
+
+.diag-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.badge-criticidad {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-criticidad-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-criticidad-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-criticidad-info {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-criticidad-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* ==========================================================================
    FORMATO IMPRIMIBLE / PDF A4 (@media print)
    ========================================================================== */
 #printArea {
@@ -797,12 +910,124 @@ textarea.form-control {
     border: 1px solid #d0dfec;
     border-radius: 6px;
     padding: 10px 14px;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
     font-size: 9.5pt;
   }
 
   .print-client-box div {
     margin-bottom: 4px;
+  }
+
+  /* =========================================================================
+     PROPUESTA B: RELEVAMIENTO TÉCNICO Y DIAGNÓSTICO EN CUADRÍCULA 2x2 (A4)
+     ========================================================================= */
+  .print-diagnostic-section {
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+
+  .print-section-title {
+    font-size: 9.5pt;
+    font-weight: 800;
+    color: #03204a;
+    border-bottom: 2px solid #03204a;
+    padding-bottom: 3px;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .print-diagnostic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .print-diagnostic-card {
+    border: 1px solid #c7d9e8;
+    border-radius: 4px;
+    background: #ffffff;
+    overflow: hidden;
+    page-break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .print-diag-img-wrap {
+    width: 100%;
+    height: 125px;
+    background: #f0f4f8;
+    border-bottom: 1px solid #d7e4ef;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .print-diag-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .print-diag-body {
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    background: #fcfdfe;
+  }
+
+  .print-diag-badge {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 7.5pt;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-badge-danger {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    border: 1px solid #f87171;
+  }
+
+  .print-badge-warning {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1px solid #fcd34d;
+  }
+
+  .print-badge-info {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+    border: 1px solid #7dd3fc;
+  }
+
+  .print-badge-success {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+    border: 1px solid #86efac;
+  }
+
+  .print-diag-title {
+    font-size: 9pt;
+    font-weight: 800;
+    color: #03204a;
+    line-height: 1.25;
+  }
+
+  .print-diag-desc {
+    font-size: 8pt;
+    color: #2b2b2b;
+    line-height: 1.3;
   }
 
   /* PRINT TABLE */

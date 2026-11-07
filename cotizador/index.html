@@ -155,6 +155,35 @@
         </div>
       </div>
 
+      <!-- =====================================================================
+           RELEVAMIENTO FOTOGRÁFICO Y DIAGNÓSTICO TÉCNICO EN OBRA (OPCIONAL)
+           ===================================================================== -->
+      <div class="card" id="diagnosticEditorCard">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📸</span> Relevamiento Fotográfico & Diagnóstico Técnico <span style="font-size: 0.82rem; font-weight: normal; color: var(--ink-light);">(Opcional)</span>
+          </div>
+          <div>
+            <label class="btn btn-primary btn-sm" style="cursor: pointer; margin-bottom: 0;">
+              <span>📷 Tomar o Subir Foto</span>
+              <input type="file" id="diagnosticFileInput" accept="image/*" capture="environment" style="display: none;" multiple>
+            </label>
+          </div>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--ink-light); margin-bottom: 12px;">
+          Podés adjuntar fotos de tableros, cables o anomalías detectadas en la visita. Las fotos se optimizan y comprimen automáticamente sin ocupar espacio innecesario. <em>(Si no agregás fotos, esta sección no aparecerá en el presupuesto impreso)</em>.
+        </p>
+
+        <div id="diagnosticEmptyNotice" style="text-align: center; padding: 20px; color: var(--ink-light); font-size: 0.88rem; background: #fbfdff; border: 1px dashed var(--line-strong); border-radius: var(--radius-sm);">
+          No hay fotografías cargadas. Hacé clic en <strong>"📷 Tomar o Subir Foto"</strong> para registrar un hallazgo técnico.
+        </div>
+
+        <div class="diagnostic-grid" id="diagnosticCardsContainer">
+          <!-- Render dinámico de tarjetas de diagnóstico en el editor -->
+        </div>
+      </div>
+
       <!-- AGREGAR ÍTEMS DESDE EL CATÁLOGO CMO O MANUALMENTE -->
       <div class="card">
         <div class="card-header">
@@ -538,6 +567,16 @@
       <div>
         <div><strong>Localidad:</strong> <span id="printClientLocation">Rosario</span></div>
         <div><strong>Dirección:</strong> <span id="printClientAddress">--</span></div>
+      </div>
+    </div>
+
+    <!-- RELEVAMIENTO TÉCNICO Y DIAGNÓSTICO EN OBRA (Solo visible si hay fotos) -->
+    <div id="printDiagnosticSection" class="print-diagnostic-section" style="display: none;">
+      <div class="print-section-title">
+        <span>📸 RELEVAMIENTO TÉCNICO Y DIAGNÓSTICO EN OBRA</span>
+      </div>
+      <div class="print-diagnostic-grid" id="printDiagnosticGrid">
+        <!-- Render dinámico de tarjetas 2x2 para el PDF -->
       </div>
     </div>
 
