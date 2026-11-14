@@ -191,36 +191,104 @@
         </div>
       </div>
 
-      <!-- AGREGAR ÍTEMS DESDE EL CATÁLOGO CMO O MANUALMENTE -->
+      <!-- ÍTEMS Y TAREAS DEL PRESUPUESTO (ITEMS PERSONALIZADOS POR DEFECTO) -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>⚡</span> Ítems y Tareas de Mano de Obra
+            <span>⚡</span> Ítems y Tareas del Presupuesto
           </div>
-          <button class="btn btn-secondary btn-sm" id="btnOpenCustomItemModal">
-            ➕ Agregar Ítem Personalizado
+          <button class="btn btn-secondary btn-sm" id="btnToggleCmoHelper" type="button">
+            📖 Consultar Catálogo CMO de Referencia
           </button>
         </div>
 
-        <!-- Barra de selección rápida del CMO -->
-        <div class="add-bar-grid">
-          <div class="form-group">
-            <label for="cmoCategoryFilter">Rubro / Categoría</label>
-            <select class="form-control" id="cmoCategoryFilter">
-              <option value="ALL">Todas las categorías</option>
-            </select>
+        <!-- 1. ENTRADA PRINCIPAL: ÍTEM PERSONALIZADO DIRECTO (PRIORIDAD POR DEFECTO) -->
+        <div class="custom-item-box">
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <span>✏️</span> Agregar Ítem Personalizado (Texto y Precio Libre)
+          </div>
+          <div class="custom-bar-grid">
+            <div class="form-group flex-item-desc">
+              <label for="quickItemDesc">Descripción de la Tarea / Material</label>
+              <input type="text" class="form-control" id="quickItemDesc" placeholder="Ej: Adecuación de acometida, armado de circuito especial..." autocomplete="off">
+            </div>
+
+            <div class="form-group flex-item-qty">
+              <label for="quickItemQty">Cantidad</label>
+              <input type="number" class="form-control" id="quickItemQty" value="1" min="0.1" step="any" style="text-align: center; font-weight: 600;">
+            </div>
+
+            <div class="form-group flex-item-unit">
+              <label for="quickItemUnit">Unidad</label>
+              <select class="form-control" id="quickItemUnit">
+                <option value="Global" selected>Global</option>
+                <option value="Unidad">Unidad</option>
+                <option value="Boca">Boca</option>
+                <option value="Metro">Metro</option>
+                <option value="Hora">Hora</option>
+                <option value="Servicio">Servicio</option>
+                <option value="Informe">Informe</option>
+              </select>
+            </div>
+
+            <div class="form-group flex-item-price">
+              <label for="quickItemPrice">P. Unitario ($)</label>
+              <input type="number" class="form-control" id="quickItemPrice" placeholder="0" step="500" style="text-align: right; font-weight: 700;">
+            </div>
+
+            <div class="form-group flex-item-cat">
+              <label for="quickItemCat">Rubro (Opcional)</label>
+              <input type="text" class="form-control" id="quickItemCat" list="quickRubrosList" placeholder="Mano de Obra">
+              <datalist id="quickRubrosList">
+                <option value="Mano de Obra">
+                <option value="Tableros Eléctricos">
+                <option value="Iluminación">
+                <option value="Cableado y Bocas">
+                <option value="Canalizaciones">
+                <option value="Materiales">
+                <option value="Urgencias / Diagnóstico">
+              </datalist>
+            </div>
+
+            <div class="form-group flex-item-btn">
+              <label>&nbsp;</label>
+              <button class="btn btn-primary" id="btnQuickAddCustomItem" type="button" style="height: 42px; width: 100%; font-weight: 700;">
+                ➕ Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. CATÁLOGO CMO DE REFERENCIA (DESPLEGABLE / SECUNDARIO) -->
+        <div id="cmoHelperSection" class="cmo-helper-drawer" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: var(--navy);">
+              📖 Catálogo de Referencia Electroinstalador (CMO)
+            </span>
+            <span style="font-size: 0.78rem; color: var(--ink-light);">
+              Seleccioná una tarea para sumarla con su tarifa de referencia
+            </span>
           </div>
 
-          <div class="form-group">
-            <label for="cmoItemSelect">Seleccionar tarea del listado CMO</label>
-            <select class="form-control" id="cmoItemSelect">
-              <option value="">Seleccione una tarea...</option>
-            </select>
-          </div>
+          <div class="add-bar-grid" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label for="cmoCategoryFilter">Rubro</label>
+              <select class="form-control" id="cmoCategoryFilter">
+                <option value="ALL">Todas las categorías</option>
+              </select>
+            </div>
 
-          <button class="btn btn-primary" id="btnAddCmoItem" style="height: 42px;">
-            ➕ Agregar
-          </button>
+            <div class="form-group">
+              <label for="cmoItemSelect">Tarea del listado CMO</label>
+              <select class="form-control" id="cmoItemSelect">
+                <option value="">Seleccione una tarea...</option>
+              </select>
+            </div>
+
+            <button class="btn btn-yellow" id="btnAddCmoItem" style="height: 42px; font-weight: 700;">
+              ➕ Agregar del CMO
+            </button>
+          </div>
         </div>
 
         <!-- TABLA DE ÍTEMS DEL PRESUPUESTO -->
@@ -244,7 +312,7 @@
         </div>
 
         <div id="emptyTableMessage" style="text-align: center; padding: 24px; color: var(--ink-light); font-size: 0.95rem;">
-          No hay tareas agregadas en este presupuesto. Seleccioná una tarea del catálogo o hacé clic en "Agregar Ítem Personalizado".
+          No hay tareas agregadas en este presupuesto. Escribí un ítem en el cuadro superior para sumarlo.
         </div>
 
         <!-- RESUMEN DE TOTALES -->
@@ -625,21 +693,24 @@
       </table>
     </div>
 
-    <!-- Términos y Condiciones -->
-    <div class="print-terms">
-      <h4>Condiciones Generales del Servicio:</h4>
-      <div id="printTermsText" style="white-space: pre-line;"></div>
-    </div>
-
-    <!-- Firmas -->
-    <div class="print-signature-area">
-      <div class="print-sign-line">
-        <strong>Smart Electric</strong><br>
-        Técnico Electricista Titulado
+    <!-- Bloque de Cierre: Condiciones y Firmas (Protegido contra cortes de página) -->
+    <div class="print-closing-block">
+      <!-- Términos y Condiciones -->
+      <div class="print-terms">
+        <h4>Condiciones Generales del Servicio:</h4>
+        <div id="printTermsText" style="white-space: pre-line;"></div>
       </div>
-      <div class="print-sign-line">
-        <strong>Conformidad del Cliente</strong><br>
-        Firma y Aclaración
+
+      <!-- Firmas -->
+      <div class="print-signature-area">
+        <div class="print-sign-line">
+          <strong>Smart Electric</strong><br>
+          Técnico Electricista Titulado
+        </div>
+        <div class="print-sign-line">
+          <strong>Conformidad del Cliente</strong><br>
+          Firma y Aclaración
+        </div>
       </div>
     </div>
 

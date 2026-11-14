@@ -322,6 +322,82 @@ textarea.form-control {
   font-size: 1rem;
 }
 
+/* ==========================================================================
+   ENTRADA PRINCIPAL: ÍTEM PERSONALIZADO (DEFAULT) Y CAJÓN CMO SECUNDARIO
+   ========================================================================== */
+.custom-item-box {
+  background: #ffffff;
+  border: 1.5px solid var(--blue);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(8, 125, 221, 0.08);
+}
+
+.custom-bar-grid {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.flex-item-desc {
+  flex: 3;
+  min-width: 250px;
+}
+
+.flex-item-qty {
+  width: 90px;
+}
+
+.flex-item-unit {
+  width: 125px;
+}
+
+.flex-item-price {
+  width: 155px;
+}
+
+.flex-item-cat {
+  width: 160px;
+}
+
+.flex-item-btn {
+  width: 130px;
+}
+
+@media (max-width: 992px) {
+  .custom-bar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .flex-item-desc {
+    grid-column: 1 / -1;
+  }
+  .flex-item-qty, .flex-item-unit, .flex-item-price, .flex-item-cat {
+    width: auto !important;
+  }
+  .flex-item-btn {
+    grid-column: 1 / -1;
+    width: 100% !important;
+  }
+}
+
+.cmo-helper-drawer {
+  background: #f1f6fc;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* CATALOG ADDITION BAR */
 .add-bar-grid {
   display: grid;
@@ -851,7 +927,7 @@ textarea.form-control {
   .print-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     border-bottom: 2.5px solid #03204a;
     padding-bottom: 12px;
     margin-bottom: 16px;
@@ -860,21 +936,23 @@ textarea.form-control {
   .print-brand {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
   }
 
+  /* LOGO AL MENOS EL DOBLE DE GRANDE (135px en lugar de 65px) */
   .print-logo {
-    width: 65px;
-    height: 65px;
-    object-fit: cover;
+    width: 135px;
+    height: 135px;
+    object-fit: contain;
     border-radius: 8px;
   }
 
   .print-brand-title {
-    font-size: 18pt;
-    font-weight: 800;
+    font-size: 20pt;
+    font-weight: 900;
     color: #03204a;
     text-transform: uppercase;
+    line-height: 1.1;
   }
 
   .print-brand-sub {
@@ -1065,6 +1143,8 @@ textarea.form-control {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 18px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .print-totals-table {
@@ -1084,7 +1164,16 @@ textarea.form-control {
     color: #03204a;
   }
 
-  /* CONDITIONS AND FOOTER */
+  /* =========================================================================
+     CONDICIONES Y FIRMAS: NUNCA SE CORTAN (SE PASAN EN BLOQUE A PÁGINA NUEVA)
+     ========================================================================= */
+  .print-closing-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-top: 14px;
+    margin-bottom: 24px;
+  }
+
   .print-terms {
     background: #fefefe;
     border: 1px solid #e0e0e0;
@@ -1092,8 +1181,10 @@ textarea.form-control {
     padding: 8px 12px;
     font-size: 8.5pt;
     color: #444;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     line-height: 1.4;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .print-terms h4 {
@@ -1106,8 +1197,10 @@ textarea.form-control {
   .print-signature-area {
     display: flex;
     justify-content: space-between;
-    margin-top: 35px;
+    margin-top: 25px;
     padding: 0 20px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .print-sign-line {

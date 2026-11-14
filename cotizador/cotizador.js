@@ -640,6 +640,75 @@
       }
     });
 
+    // --- ENTRADA PRINCIPAL: ÍTEM PERSONALIZADO DIRECTO (PRIORIDAD POR DEFECTO) ---
+    const quickAddBtn = document.getElementById('btnQuickAddCustomItem');
+    const quickDesc = document.getElementById('quickItemDesc');
+    const quickQty = document.getElementById('quickItemQty');
+    const quickUnit = document.getElementById('quickItemUnit');
+    const quickPrice = document.getElementById('quickItemPrice');
+    const quickCat = document.getElementById('quickItemCat');
+
+    function handleQuickAddCustom() {
+      const desc = quickDesc ? quickDesc.value.trim() : '';
+      const qty = quickQty ? (parseFloat(quickQty.value) || 1) : 1;
+      const unit = quickUnit ? quickUnit.value : 'Global';
+      const price = quickPrice ? (parseFloat(quickPrice.value) || 0) : 0;
+      const cat = (quickCat && quickCat.value.trim()) ? quickCat.value.trim() : 'Mano de Obra';
+
+      if (!desc) {
+        alert('Por favor ingresá la descripción del ítem o tarea.');
+        if (quickDesc) quickDesc.focus();
+        return;
+      }
+
+      addItemToBudget({
+        id: 'cust-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+        categoria: cat,
+        descripcion: desc,
+        cantidad: qty,
+        unidad: unit,
+        precioUnitario: price,
+        subtotal: qty * price
+      });
+
+      // Limpiar y reenfocar para carga rápida consecutiva
+      if (quickDesc) {
+        quickDesc.value = '';
+        quickDesc.focus();
+      }
+      if (quickPrice) quickPrice.value = '';
+      if (quickQty) quickQty.value = '1';
+
+      showToast('Ítem agregado al presupuesto.');
+    }
+
+    if (quickAddBtn) {
+      quickAddBtn.addEventListener('click', handleQuickAddCustom);
+    }
+
+    // Permitir agregar con la tecla Enter desde el precio o la descripción
+    if (quickPrice) {
+      quickPrice.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleQuickAddCustom();
+        }
+      });
+    }
+
+    // --- TOGGLE DEL CAJÓN SECUNDARIO: CATÁLOGO CMO ---
+    const btnToggleCmo = document.getElementById('btnToggleCmoHelper');
+    const cmoSection = document.getElementById('cmoHelperSection');
+    if (btnToggleCmo && cmoSection) {
+      btnToggleCmo.addEventListener('click', () => {
+        const isHidden = cmoSection.style.display === 'none';
+        cmoSection.style.display = isHidden ? 'block' : 'none';
+        btnToggleCmo.textContent = isHidden ? '✕ Ocultar Catálogo CMO' : '📖 Consultar Catálogo CMO de Referencia';
+        btnToggleCmo.classList.toggle('active', isHidden);
+      });
+    }
+
+    // Botón agregar ítem del CMO (secundario)
     document.getElementById('btnAddCmoItem').addEventListener('click', () => {
       const select = document.getElementById('cmoItemSelect');
       const itemId = select.value;
@@ -662,43 +731,50 @@
         subtotal: item.precio
       });
 
-      showToast(`Agregado: ${item.descripcion.substring(0, 30)}...`);
+      showToast(`Agregado del CMO: ${item.descripcion.substring(0, 30)}...`);
     });
 
+    // Modal alternativo (si se usa)
     const customModal = document.getElementById('customItemModal');
-    document.getElementById('btnOpenCustomItemModal').addEventListener('click', () => {
-      document.getElementById('customItemDesc').value = '';
-      document.getElementById('customItemQty').value = '1';
-      document.getElementById('customItemPrice').value = '';
-      customModal.classList.add('open');
-      document.getElementById('customItemDesc').focus();
-    });
-
-    document.getElementById('btnConfirmCustomItem').addEventListener('click', () => {
-      const desc = document.getElementById('customItemDesc').value.trim();
-      const cat = document.getElementById('customItemCategory').value.trim() || 'Varios';
-      const qty = parseFloat(document.getElementById('customItemQty').value) || 1;
-      const unit = document.getElementById('customItemUnit').value.trim() || 'Global';
-      const price = parseFloat(document.getElementById('customItemPrice').value) || 0;
-
-      if (!desc) {
-        alert('Por favor ingresá la descripción de la tarea.');
-        return;
-      }
-
-      addItemToBudget({
-        id: 'cust-' + Date.now().toString(36),
-        categoria: cat,
-        descripcion: desc,
-        cantidad: qty,
-        unidad: unit,
-        precioUnitario: price,
-        subtotal: qty * price
+    const openModalBtn = document.getElementById('btnOpenCustomItemModal');
+    if (openModalBtn && customModal) {
+      openModalBtn.addEventListener('click', () => {
+        document.getElementById('customItemDesc').value = '';
+        document.getElementById('customItemQty').value = '1';
+        document.getElementById('customItemPrice').value = '';
+        customModal.classList.add('open');
+        document.getElementById('customItemDesc').focus();
       });
+    }
 
-      customModal.classList.remove('open');
-      showToast('Ítem personalizado agregado.');
-    });
+    const confirmModalBtn = document.getElementById('btnConfirmCustomItem');
+    if (confirmModalBtn && customModal) {
+      confirmModalBtn.addEventListener('click', () => {
+        const desc = document.getElementById('customItemDesc').value.trim();
+        const cat = document.getElementById('customItemCategory').value.trim() || 'Varios';
+        const qty = parseFloat(document.getElementById('customItemQty').value) || 1;
+        const unit = document.getElementById('customItemUnit').value.trim() || 'Global';
+        const price = parseFloat(document.getElementById('customItemPrice').value) || 0;
+
+        if (!desc) {
+          alert('Por favor ingresá la descripción de la tarea.');
+          return;
+        }
+
+        addItemToBudget({
+          id: 'cust-' + Date.now().toString(36),
+          categoria: cat,
+          descripcion: desc,
+          cantidad: qty,
+          unidad: unit,
+          precioUnitario: price,
+          subtotal: qty * price
+        });
+
+        customModal.classList.remove('open');
+        showToast('Ítem personalizado agregado.');
+      });
+    }
 
     document.getElementById('btnSaveBudget').addEventListener('click', saveCurrentBudget);
     document.getElementById('btnNewBudget').addEventListener('click', resetBudgetForm);
