@@ -163,10 +163,14 @@
           <div class="card-title">
             <span>📸</span> Relevamiento Fotográfico & Diagnóstico Técnico <span style="font-size: 0.82rem; font-weight: normal; color: var(--ink-light);">(Opcional)</span>
           </div>
-          <div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <label class="btn btn-primary btn-sm" style="cursor: pointer; margin-bottom: 0;">
-              <span>📷 Tomar o Subir Foto</span>
-              <input type="file" id="diagnosticFileInput" accept="image/*" capture="environment" style="display: none;" multiple>
+              <span>🖼️ Galería / Archivos</span>
+              <input type="file" id="diagnosticFileInput" accept="image/*" style="display: none;" multiple>
+            </label>
+            <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin-bottom: 0;">
+              <span>📷 Tomar Foto</span>
+              <input type="file" id="diagnosticCameraInput" accept="image/*" capture="environment" style="display: none;">
             </label>
           </div>
         </div>
@@ -176,7 +180,7 @@
         </p>
 
         <div id="diagnosticEmptyNotice" style="text-align: center; padding: 20px; color: var(--ink-light); font-size: 0.88rem; background: #fbfdff; border: 1px dashed var(--line-strong); border-radius: var(--radius-sm);">
-          No hay fotografías cargadas. Hacé clic en <strong>"📷 Tomar o Subir Foto"</strong> para registrar un hallazgo técnico.
+          No hay fotografías cargadas. Hacé clic en <strong>"🖼️ Galería / Archivos"</strong> para elegir fotos guardadas o en <strong>"📷 Tomar Foto"</strong> para capturarla en el momento.
         </div>
 
         <div class="diagnostic-grid" id="diagnosticCardsContainer">

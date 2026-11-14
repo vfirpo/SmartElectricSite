@@ -379,16 +379,16 @@
   // =========================================================================
   function initDiagnosticControls() {
     const fileInput = document.getElementById('diagnosticFileInput');
-    if (!fileInput) return;
+    const cameraInput = document.getElementById('diagnosticCameraInput');
 
-    fileInput.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files || []);
-      if (files.length === 0) return;
+    const processFiles = async (files, inputElement) => {
+      const fileList = Array.from(files || []);
+      if (fileList.length === 0) return;
 
-      showToast(`Procesando ${files.length} imagen(es)...`);
+      showToast(`Procesando ${fileList.length} imagen(es)...`);
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
         try {
           const comp = await compressImageFile(file);
           const diagItem = {
@@ -408,9 +408,16 @@
       }
 
       renderDiagnosticCards();
-      fileInput.value = '';
+      if (inputElement) inputElement.value = '';
       showToast('Fotografías optimizadas y agregadas al presupuesto.');
-    });
+    };
+
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => processFiles(e.target.files, fileInput));
+    }
+    if (cameraInput) {
+      cameraInput.addEventListener('change', (e) => processFiles(e.target.files, cameraInput));
+    }
   }
 
   function renderDiagnosticCards() {
