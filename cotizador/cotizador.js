@@ -186,6 +186,126 @@
   }
 
   // =========================================================================
+  // 1.B. CLIENTE API DE CLOUDFLARE D1 (SINCRONIZACIÓN EN LA NUBE)
+  // =========================================================================
+  const CloudAPI = {
+    ENDPOINT: '/api/budgets',
+
+    async fetchAll() {
+      if (window.location.protocol === 'file:') return null;
+      try {
+        const res = await fetch(this.ENDPOINT, { cache: 'no-store' });
+        if (res.ok) {
+          return await res.json();
+        }
+        return null;
+      } catch (e) {
+        console.warn('API D1 fuera de línea', e);
+        return null;
+      }
+    },
+
+    async fetchOne(id) {
+      if (window.location.protocol === 'file:') return null;
+      try {
+        const res = await fetch(`${this.ENDPOINT}/${encodeURIComponent(id)}`, { cache: 'no-store' });
+        if (res.ok) {
+          return await res.json();
+        }
+        return null;
+      } catch (e) {
+        console.warn('Error al cargar detalle de D1', e);
+        return null;
+      }
+    },
+
+    async save(budget) {
+      if (window.location.protocol === 'file:') return false;
+      try {
+        const res = await fetch(this.ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(budget)
+        });
+        return res.ok;
+      } catch (e) {
+        console.warn('Falla al enviar a D1', e);
+        return false;
+      }
+    },
+
+    async delete(id) {
+      if (window.location.protocol === 'file:') return false;
+      try {
+        const res = await fetch(`${this.ENDPOINT}/${encodeURIComponent(id)}`, {
+          method: 'DELETE'
+        });
+        return res.ok;
+      } catch (e) {
+        console.warn('Falla al eliminar de D1', e);
+        return false;
+      }
+    }
+  };
+
+  function updateCloudStatusBadge(isOnline, customText) {
+    const badge = document.getElementById('cloudStatusBadge');
+    if (!badge) return;
+    if (customText) {
+      badge.innerHTML = customText;
+      return;
+    }
+    if (isOnline) {
+      badge.style.background = 'rgba(29, 187, 98, 0.2)';
+      badge.style.color = '#79f2af';
+      badge.style.border = '1px solid rgba(29, 187, 98, 0.4)';
+      badge.innerHTML = '🟢 Nube D1 Activa';
+      badge.title = 'Sincronizado con Cloudflare D1 en tiempo real';
+    } else {
+      badge.style.background = 'rgba(255, 123, 0, 0.2)';
+      badge.style.color = '#ffc078';
+      badge.style.border = '1px solid rgba(255, 123, 0, 0.4)';
+      badge.innerHTML = '🟠 Modo Local';
+      badge.title = 'Trabajando sin conexión o en vista local (IndexedDB)';
+    }
+  }
+
+  async function syncWithCloud() {
+    updateCloudStatusBadge(false, '☁️ Conectando...');
+    const cloudBudgets = await CloudAPI.fetchAll();
+
+    if (Array.isArray(cloudBudgets)) {
+      // 1. Integrar presupuestos de la nube a local
+      for (const cb of cloudBudgets) {
+        const local = StorageDB.cache.find(l => l.id === cb.id);
+        if (!local) {
+          await StorageDB.save(cb);
+        } else {
+          local.number = cb.number;
+          local.date = cb.date;
+          local.status = cb.status;
+          local.grandTotal = cb.grandTotal;
+          local.client = cb.client;
+          await StorageDB.save(local);
+        }
+      }
+
+      // 2. Subir a la nube presupuestos que fueron creados localmente/offline
+      for (const lb of StorageDB.cache) {
+        if (!cloudBudgets.some(cb => cb.id === lb.id)) {
+          await CloudAPI.save(lb);
+        }
+      }
+
+      updateCloudStatusBadge(true);
+      renderHistoryTable();
+      updateHistoryCounter();
+    } else {
+      updateCloudStatusBadge(false);
+    }
+  }
+
+  // =========================================================================
   // 2. SISTEMA DE SEGURIDAD Y BLOQUEO POR PIN
   // =========================================================================
   function initPinSecurity() {
@@ -794,9 +914,18 @@
     // Clonar para guardar sin referencias vivas
     const toSave = JSON.parse(JSON.stringify(currentBudget));
     await StorageDB.save(toSave);
-
     updateHistoryCounter();
-    showToast(`Presupuesto ${currentBudget.number} guardado en el historial.`);
+
+    // Sincronizar en segundo plano con Cloudflare D1
+    updateCloudStatusBadge(false, '☁️ Sincronizando con D1...');
+    const cloudSaved = await CloudAPI.save(toSave);
+    if (cloudSaved) {
+      updateCloudStatusBadge(true);
+      showToast(`Presupuesto ${currentBudget.number} guardado y sincronizado en Cloudflare D1.`);
+    } else {
+      updateCloudStatusBadge(false);
+      showToast(`Presupuesto ${currentBudget.number} guardado en tu dispositivo.`);
+    }
   }
 
   function updateHistoryCounter() {
@@ -833,12 +962,12 @@
     filtered.forEach(b => {
       const tr = document.createElement('tr');
       const statusClass = 'status-' + (b.status || 'borrador').toLowerCase();
-      const hasPhotos = Array.isArray(b.diagnostics) && b.diagnostics.length > 0;
+      const countPhotos = (b.diagnostics && b.diagnostics.length) || b.diagnosticsCount || 0;
 
       tr.innerHTML = `
         <td>
           <strong style="color: var(--navy);">${escapeHtml(b.number)}</strong>
-          ${hasPhotos ? `<span title="${b.diagnostics.length} foto(s) de diagnóstico" style="font-size: 0.8rem; margin-left: 4px;">📸(${b.diagnostics.length})</span>` : ''}
+          ${countPhotos > 0 ? `<span title="${countPhotos} foto(s) de diagnóstico" style="font-size: 0.8rem; margin-left: 4px;">📸(${countPhotos})</span>` : ''}
         </td>
         <td>${b.date || '--'}</td>
         <td><strong>${escapeHtml(b.client?.name || 'Sin nombre')}</strong></td>
@@ -868,13 +997,19 @@
     });
 
     tbody.querySelectorAll('[data-print-id]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.getAttribute('data-print-id');
-        const b = getSavedBudgets().find(x => x.id === id);
-        if (b) {
-          fillPrintTemplate(b);
-          window.print();
+        let b = getSavedBudgets().find(x => x.id === id);
+        if (!b) return;
+
+        if (!b.items || b.items.length === 0) {
+          showToast('Cargando detalle desde Cloudflare D1...');
+          const full = await CloudAPI.fetchOne(id);
+          if (full) b = full;
         }
+
+        fillPrintTemplate(b);
+        window.print();
       });
     });
 
@@ -883,10 +1018,17 @@
     });
 
     tbody.querySelectorAll('[data-wa-id]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.getAttribute('data-wa-id');
-        const b = getSavedBudgets().find(x => x.id === id);
-        if (b) openWhatsappBudget(b);
+        let b = getSavedBudgets().find(x => x.id === id);
+        if (!b) return;
+
+        if (!b.items || b.items.length === 0) {
+          const full = await CloudAPI.fetchOne(id);
+          if (full) b = full;
+        }
+
+        openWhatsappBudget(b);
       });
     });
 
@@ -895,14 +1037,27 @@
     });
   }
 
-  function loadBudgetToEditor(id) {
+  async function loadBudgetToEditor(id) {
     const budgets = getSavedBudgets();
-    const b = budgets.find(x => x.id === id);
+    let b = budgets.find(x => x.id === id);
     if (!b) return;
+
+    // Si el presupuesto no tiene ítems detallados (traído de la lista de D1), descargar detalle completo
+    if (!b.items || b.items.length === 0) {
+      showToast('Descargando detalle completo desde Cloudflare D1...');
+      const full = await CloudAPI.fetchOne(id);
+      if (full) {
+        b = full;
+        await StorageDB.save(full);
+      }
+    }
 
     currentBudget = JSON.parse(JSON.stringify(b));
     if (!Array.isArray(currentBudget.diagnostics)) {
       currentBudget.diagnostics = [];
+    }
+    if (!Array.isArray(currentBudget.items)) {
+      currentBudget.items = [];
     }
 
     document.getElementById('budgetNumber').value = currentBudget.number || '';
@@ -964,7 +1119,10 @@
     await StorageDB.delete(id);
     updateHistoryCounter();
     renderHistoryTable();
-    showToast('Presupuesto eliminado.');
+
+    // Eliminar también de Cloudflare D1
+    await CloudAPI.delete(id);
+    showToast('Presupuesto eliminado de tu dispositivo y de la nube.');
   }
 
   // =========================================================================
@@ -1392,9 +1550,12 @@
     initBackupControls();
     initMasterCmoPanel();
 
-    // Inicializar IndexedDB y cargar contador
+    // 1. Inicializar almacenamiento local (IndexedDB) para respuesta inmediata
     await StorageDB.init();
     updateHistoryCounter();
+
+    // 2. Sincronizar automáticamente en segundo plano con Cloudflare D1
+    await syncWithCloud();
   });
 
 })();
