@@ -1078,7 +1078,11 @@
         let b = getSavedBudgets().find(x => x.id === id);
         if (!b) return;
 
-        if (!b.items || b.items.length === 0) {
+        // Si faltan ítems O si hay diagnósticos sin imágenes (vienen solo como resumen del listado), cargar detalle completo
+        const missingImagesForPrint = Array.isArray(b.diagnostics) &&
+          b.diagnostics.length > 0 &&
+          b.diagnostics.some(d => !d.imageDataUrl);
+        if (!b.items || b.items.length === 0 || missingImagesForPrint) {
           showToast('Cargando detalle desde Cloudflare D1...');
           const full = await CloudAPI.fetchOne(id);
           if (full) b = full;
@@ -1099,7 +1103,8 @@
         let b = getSavedBudgets().find(x => x.id === id);
         if (!b) return;
 
-        if (!b.items || b.items.length === 0) {
+        if (!b.items || b.items.length === 0 ||
+            (Array.isArray(b.diagnostics) && b.diagnostics.some(d => !d.imageDataUrl))) {
           const full = await CloudAPI.fetchOne(id);
           if (full) b = full;
         }
@@ -1118,8 +1123,11 @@
     let b = budgets.find(x => x.id === id);
     if (!b) return;
 
-    // Si el presupuesto no tiene ítems detallados (traído de la lista de D1), descargar detalle completo
-    if (!b.items || b.items.length === 0) {
+    // Si faltan ítems O si hay diagnósticos sin imagen (quedaron solo como resumen de D1), descargar detalle completo
+    const missingImages = Array.isArray(b.diagnostics) &&
+      b.diagnostics.length > 0 &&
+      b.diagnostics.some(d => !d.imageDataUrl);
+    if (!b.items || b.items.length === 0 || missingImages) {
       showToast('Descargando detalle completo desde Cloudflare D1...');
       const full = await CloudAPI.fetchOne(id);
       if (full) {
