@@ -421,15 +421,15 @@
 
         <!-- TABLA DE HISTORIAL -->
         <div class="table-responsive">
-          <table class="budget-table">
+          <table class="budget-table" id="historyTable">
             <thead>
               <tr>
-                <th style="width: 14%;">N° Presupuesto</th>
-                <th style="width: 12%;">Fecha</th>
-                <th>Cliente</th>
-                <th>Localidad</th>
-                <th style="text-align: right; width: 15%;">Total</th>
-                <th style="width: 12%; text-align: center;">Estado</th>
+                <th style="width: 14%;" aria-sort="descending"><button type="button" class="history-sort" data-sort-key="number">N° Presupuesto <span class="sort-indicator" aria-hidden="true">↓</span></button></th>
+                <th style="width: 12%;" aria-sort="none"><button type="button" class="history-sort" data-sort-key="date">Fecha <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th aria-sort="none"><button type="button" class="history-sort" data-sort-key="client">Cliente <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th aria-sort="none"><button type="button" class="history-sort" data-sort-key="location">Localidad <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th style="text-align: right; width: 15%;" aria-sort="none"><button type="button" class="history-sort" data-sort-key="grandTotal">Total <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
+                <th style="width: 12%; text-align: center;" aria-sort="none"><button type="button" class="history-sort" data-sort-key="status">Estado <span class="sort-indicator" aria-hidden="true">↕</span></button></th>
                 <th style="width: 240px; text-align: center;">Acciones</th>
               </tr>
             </thead>

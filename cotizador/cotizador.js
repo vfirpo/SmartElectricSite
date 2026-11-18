@@ -41,6 +41,15 @@
     notes: DEFAULT_TERMS
   };
 
+  const historySort = {
+    key: 'number',
+    direction: 'desc'
+  };
+  const historyCollator = new Intl.Collator('es-AR', {
+    numeric: true,
+    sensitivity: 'base'
+  });
+
   // =========================================================================
   // 1. CAPA DE ALMACENAMIENTO INDEXEDDB (CAPACIDAD ILIMITADA PARA FOTOS Y HISTORIAL)
   // =========================================================================
@@ -1105,6 +1114,75 @@
     if (counter) counter.textContent = budgets.length;
   }
 
+  function getHistorySortValue(budget, key) {
+    switch (key) {
+      case 'date':
+        return Date.parse(budget.date || '') || 0;
+      case 'grandTotal':
+        return Number(budget.grandTotal) || 0;
+      case 'client':
+        return budget.client?.name || '';
+      case 'location':
+        return budget.client?.location || '';
+      case 'status':
+        return budget.status || '';
+      case 'number':
+      default:
+        return budget.number || '';
+    }
+  }
+
+  function sortBudgetHistory(budgets) {
+    return [...budgets].sort((a, b) => {
+      const aValue = getHistorySortValue(a, historySort.key);
+      const bValue = getHistorySortValue(b, historySort.key);
+      let comparison;
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else {
+        comparison = historyCollator.compare(String(aValue), String(bValue));
+      }
+
+      if (comparison === 0 && historySort.key !== 'number') {
+        comparison = historyCollator.compare(String(a.number || ''), String(b.number || ''));
+        return -comparison; // Desempate consistente: número de presupuesto más alto primero.
+      }
+
+      return historySort.direction === 'asc' ? comparison : -comparison;
+    });
+  }
+
+  function updateHistorySortControls() {
+    document.querySelectorAll('#historyTable .history-sort').forEach(button => {
+      const active = button.dataset.sortKey === historySort.key;
+      const direction = active ? historySort.direction : 'none';
+      const indicator = button.querySelector('.sort-indicator');
+      const header = button.closest('th');
+
+      header?.setAttribute('aria-sort', direction === 'none' ? 'none' : direction === 'asc' ? 'ascending' : 'descending');
+      button.setAttribute('aria-pressed', String(active));
+      if (indicator) indicator.textContent = !active ? '↕' : direction === 'asc' ? '↑' : '↓';
+    });
+  }
+
+  function initHistorySorting() {
+    document.querySelectorAll('#historyTable .history-sort').forEach(button => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.sortKey;
+        if (key === historySort.key) {
+          historySort.direction = historySort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          historySort.key = key;
+          historySort.direction = ['number', 'date', 'grandTotal'].includes(key) ? 'desc' : 'asc';
+        }
+        updateHistorySortControls();
+        renderHistoryTable();
+      });
+    });
+    updateHistorySortControls();
+  }
+
   function renderHistoryTable() {
     const tbody = document.getElementById('historyTableBody');
     const emptyMsg = document.getElementById('emptyHistoryMessage');
@@ -1123,14 +1201,16 @@
       return matchStatus && matchText;
     });
 
-    if (filtered.length === 0) {
+    const sorted = sortBudgetHistory(filtered);
+
+    if (sorted.length === 0) {
       emptyMsg.style.display = 'block';
       return;
     }
 
     emptyMsg.style.display = 'none';
 
-    filtered.forEach(b => {
+    sorted.forEach(b => {
       const tr = document.createElement('tr');
       const statusClass = 'status-' + (b.status || 'borrador').toLowerCase();
       const countPhotos = (b.diagnostics && b.diagnostics.length) || b.diagnosticsCount || 0;
@@ -1740,6 +1820,7 @@
     initBudgetForm();
     initBackupControls();
     initMasterCmoPanel();
+    initHistorySorting();
 
     // 1. Inicializar almacenamiento local (IndexedDB) para respuesta inmediata
     await StorageDB.init();

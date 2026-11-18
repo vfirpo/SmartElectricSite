@@ -443,6 +443,35 @@ textarea.form-control {
   white-space: nowrap;
 }
 
+.history-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+.history-sort:hover,
+.history-sort:focus-visible {
+  color: var(--blue);
+}
+
+.history-sort:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.sort-indicator {
+  color: var(--ink-light);
+  font-size: 0.8em;
+}
+
 .budget-table td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--line);
