@@ -1183,8 +1183,7 @@
           if (full) b = full;
         }
 
-        fillPrintTemplate(b);
-        window.print();
+        printBudget(b);
       });
     });
 
@@ -1604,6 +1603,20 @@
     document.getElementById('printTermsText').textContent = budget.notes || DEFAULT_TERMS;
   }
 
+  function printBudget(budget) {
+    const previousTitle = document.title;
+    const number = String(budget.number || 'Sin número').trim();
+    document.title = `Smart Electric Presupuesto ${number}`;
+
+    // El navegador usa document.title como nombre sugerido al guardar el PDF.
+    window.addEventListener('afterprint', () => {
+      document.title = previousTitle;
+    }, { once: true });
+
+    fillPrintTemplate(budget);
+    window.print();
+  }
+
   function triggerPrintPreview() {
     if (currentBudget.items.length === 0) {
       alert('Agregá al menos un ítem al presupuesto para generar la vista imprimible.');
@@ -1621,8 +1634,7 @@
     };
     currentBudget.notes = document.getElementById('budgetNotes').value;
 
-    fillPrintTemplate(currentBudget);
-    window.print();
+    printBudget(currentBudget);
   }
 
   // =========================================================================
