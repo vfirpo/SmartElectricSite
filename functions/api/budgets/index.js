@@ -135,7 +135,9 @@ export async function onRequestPost({ request, env }) {
       env.DB.prepare("DELETE FROM budget_diagnostics WHERE budget_id = ?").bind(budget.id)
     );
 
-    // 3. Insertar nuevos ítems de mano de obra
+    // 3. Insertar nuevos ítems de mano de obra.
+    // Los registros anteriores ya se eliminaron; siempre generar IDs nuevos evita
+    // colisiones de claves primarias en copias creadas antes de esta corrección.
     if (Array.isArray(budget.items)) {
       for (const item of budget.items) {
         statements.push(
@@ -144,7 +146,7 @@ export async function onRequestPost({ request, env }) {
               id, budget_id, categoria, descripcion, cantidad, unidad, precio_unitario, subtotal
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `).bind(
-            item.id || ('item-' + Math.random().toString(36).substr(2, 9)),
+            `item-${crypto.randomUUID()}`,
             budget.id,
             item.categoria || '',
             item.descripcion || '',
@@ -157,7 +159,7 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    // 4. Insertar diagnósticos y fotos en base64
+    // 4. Insertar diagnósticos y fotos en base64 con IDs nuevos por cada guardado.
     if (Array.isArray(budget.diagnostics)) {
       for (const diag of budget.diagnostics) {
         statements.push(
@@ -166,7 +168,7 @@ export async function onRequestPost({ request, env }) {
               id, budget_id, title, criticidad, description, image_data
             ) VALUES (?, ?, ?, ?, ?, ?)
           `).bind(
-            diag.id || ('diag-' + Math.random().toString(36).substr(2, 9)),
+            `diag-${crypto.randomUUID()}`,
             budget.id,
             diag.title || '',
             diag.criticidad || '',

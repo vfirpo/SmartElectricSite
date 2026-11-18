@@ -552,10 +552,15 @@
 
   function generateNextBudgetNumber() {
     const year = new Date().getFullYear();
-    let lastSeq = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_NUMBER) || '0', 10);
-    lastSeq += 1;
-    localStorage.setItem(STORAGE_KEYS.LAST_NUMBER, lastSeq.toString());
-    const seqStr = String(lastSeq).padStart(3, '0');
+    const savedSequence = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_NUMBER) || '0', 10) || 0;
+    const currentYearPattern = new RegExp(`^SE-${year}-(\\d+)$`, 'i');
+    const highestKnownSequence = getSavedBudgets().reduce((highest, budget) => {
+      const match = String(budget.number || '').match(currentYearPattern);
+      return match ? Math.max(highest, parseInt(match[1], 10)) : highest;
+    }, 0);
+    const nextSequence = Math.max(savedSequence, highestKnownSequence) + 1;
+    localStorage.setItem(STORAGE_KEYS.LAST_NUMBER, String(nextSequence));
+    const seqStr = String(nextSequence).padStart(3, '0');
     return `SE-${year}-${seqStr}`;
   }
 
