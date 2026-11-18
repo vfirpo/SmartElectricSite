@@ -266,7 +266,12 @@
     },
 
     async save(budget) {
-      if (window.location.protocol === 'file:' || !getApiToken()) return false;
+      if (window.location.protocol === 'file:') {
+        return { ok: false, status: 0, error: 'Abrí el cotizador desde el sitio web para sincronizar con D1.' };
+      }
+      if (!getApiToken()) {
+        return { ok: false, status: 401, error: 'La sesión venció. Volvé a ingresar con tu PIN.' };
+      }
       try {
         const res = await fetch(this.ENDPOINT, {
           method: 'POST',
@@ -274,10 +279,17 @@
           body: JSON.stringify(budget)
         });
         this.handleUnauthorized(res);
-        return res.ok;
+        if (res.ok) return { ok: true, status: res.status, error: '' };
+
+        let error = `D1 respondió con error ${res.status}.`;
+        try {
+          const body = await res.json();
+          if (body?.error) error = body.error;
+        } catch {}
+        return { ok: false, status: res.status, error };
       } catch (e) {
         console.warn('Falla al enviar a D1', e);
-        return false;
+        return { ok: false, status: 0, error: 'No se pudo conectar con D1. Verificá tu conexión e intentá nuevamente.' };
       }
     },
 
@@ -296,6 +308,20 @@
       }
     }
   };
+
+  async function saveToCloudWithRetry(budget, retries = 2) {
+    let result = { ok: false, status: 0, error: 'No se pudo sincronizar con D1.' };
+
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+      result = await CloudAPI.save(budget);
+      if (result.ok || [400, 401, 403].includes(result.status)) return result;
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 700 * (attempt + 1)));
+      }
+    }
+
+    return result;
+  }
 
   function updateCloudStatusBadge(isOnline, customText) {
     const badge = document.getElementById('cloudStatusBadge');
@@ -339,14 +365,16 @@
         }
       }
 
-      // 2. Subir a la nube presupuestos que fueron creados localmente/offline
+      // 2. Subir a la nube presupuestos pendientes. No reportar D1 activa si alguno falla.
+      let pendingUploadFailed = false;
       for (const lb of StorageDB.cache) {
         if (!cloudBudgets.some(cb => cb.id === lb.id)) {
-          await CloudAPI.save(lb);
+          const result = await saveToCloudWithRetry(lb);
+          if (!result.ok) pendingUploadFailed = true;
         }
       }
 
-      updateCloudStatusBadge(true);
+      updateCloudStatusBadge(!pendingUploadFailed);
       renderHistoryTable();
       updateHistoryCounter();
     } else {
@@ -1091,20 +1119,25 @@
       currentBudget.id = 'bud-' + Date.now().toString(36);
     }
 
-    // Clonar para guardar sin referencias vivas
+    // Clonar para conservar una copia local de seguridad mientras D1 confirma la escritura.
     const toSave = JSON.parse(JSON.stringify(currentBudget));
     await StorageDB.save(toSave);
     updateHistoryCounter();
 
-    // Sincronizar en segundo plano con Cloudflare D1
+    const saveButton = document.getElementById('btnSaveBudget');
+    saveButton.disabled = true;
     updateCloudStatusBadge(false, '☁️ Sincronizando con D1...');
-    const cloudSaved = await CloudAPI.save(toSave);
-    if (cloudSaved) {
-      updateCloudStatusBadge(true);
-      showToast(`Presupuesto ${currentBudget.number} guardado y sincronizado en Cloudflare D1.`);
-    } else {
-      updateCloudStatusBadge(false);
-      showToast(`Presupuesto ${currentBudget.number} guardado en tu dispositivo.`);
+    try {
+      const result = await saveToCloudWithRetry(toSave);
+      if (result.ok) {
+        updateCloudStatusBadge(true);
+        showToast(`Presupuesto ${currentBudget.number} guardado y sincronizado en Cloudflare D1.`);
+      } else {
+        updateCloudStatusBadge(false);
+        alert(`El presupuesto quedó pendiente de sincronización y no se confirmó en D1.\n\nMotivo: ${result.error}\n\nNo cierres esta pestaña. Corregí el problema y presioná “Guardar Presupuesto” nuevamente.`);
+      }
+    } finally {
+      saveButton.disabled = false;
     }
   }
 
@@ -1345,6 +1378,10 @@
 
     const copy = JSON.parse(JSON.stringify(b));
     copy.id = null;
+    // Los IDs de ítems y diagnósticos son únicos en D1. La copia debe recibir
+    // IDs nuevos al guardarse; de lo contrario D1 rechaza el lote por duplicados.
+    copy.items = (copy.items || []).map(item => ({ ...item, id: null }));
+    copy.diagnostics = (copy.diagnostics || []).map(diagnostic => ({ ...diagnostic, id: null }));
     copy.number = generateNextBudgetNumber();
     copy.date = new Date().toISOString().split('T')[0];
     copy.status = 'Borrador';
@@ -1367,7 +1404,7 @@
     recalculateTotals();
 
     document.querySelector('[data-tab="tab-editor"]').click();
-    showToast(`Presupuesto duplicado como ${currentBudget.number}.`);
+    showToast(`Copia creada como ${currentBudget.number}. Revisala y presioná “Guardar Presupuesto” para confirmarla en D1.`);
   }
 
   async function deleteBudget(id) {
