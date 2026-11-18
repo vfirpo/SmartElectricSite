@@ -8,13 +8,11 @@
 
   // --- CLAVES DE ALMACENAMIENTO ---
   const STORAGE_KEYS = {
-    PIN: 'smartelectric_app_pin_v1',
-    SESSION: 'smartelectric_session_unlocked',
+    API_TOKEN: 'smartelectric_api_token_v1',
+    API_EXPIRES_AT: 'smartelectric_api_expires_at_v1',
     BUDGETS: 'smartelectric_budgets_history_v1',
     LAST_NUMBER: 'smartelectric_last_budget_num_v1'
   };
-
-  const DEFAULT_PIN = '1234';
 
   const DEFAULT_TERMS = 
 `• Los precios cotizados corresponden exclusivamente a Mano de Obra técnica especializada.
@@ -185,16 +183,51 @@
     return StorageDB.getAll();
   }
 
+  function getApiToken() {
+    const token = sessionStorage.getItem(STORAGE_KEYS.API_TOKEN);
+    const expiresAt = sessionStorage.getItem(STORAGE_KEYS.API_EXPIRES_AT);
+    const expiryTime = Date.parse(expiresAt || '');
+
+    if (!token || !Number.isFinite(expiryTime) || expiryTime <= Date.now()) {
+      sessionStorage.removeItem(STORAGE_KEYS.API_TOKEN);
+      sessionStorage.removeItem(STORAGE_KEYS.API_EXPIRES_AT);
+      return null;
+    }
+
+    return token;
+  }
+
+  function clearApiSession() {
+    sessionStorage.removeItem(STORAGE_KEYS.API_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.API_EXPIRES_AT);
+  }
+
   // =========================================================================
   // 1.B. CLIENTE API DE CLOUDFLARE D1 (SINCRONIZACIÓN EN LA NUBE)
   // =========================================================================
   const CloudAPI = {
     ENDPOINT: '/api/budgets',
 
+    headers(extra = {}) {
+      const token = getApiToken();
+      return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+    },
+
+    handleUnauthorized(response) {
+      if (response.status === 401) {
+        clearApiSession();
+        window.dispatchEvent(new Event('smartelectric-session-expired'));
+      }
+    },
+
     async fetchAll() {
-      if (window.location.protocol === 'file:') return null;
+      if (window.location.protocol === 'file:' || !getApiToken()) return null;
       try {
-        const res = await fetch(this.ENDPOINT, { cache: 'no-store' });
+        const res = await fetch(this.ENDPOINT, {
+          cache: 'no-store',
+          headers: this.headers()
+        });
+        this.handleUnauthorized(res);
         if (res.ok) {
           return await res.json();
         }
@@ -206,9 +239,13 @@
     },
 
     async fetchOne(id) {
-      if (window.location.protocol === 'file:') return null;
+      if (window.location.protocol === 'file:' || !getApiToken()) return null;
       try {
-        const res = await fetch(`${this.ENDPOINT}/${encodeURIComponent(id)}`, { cache: 'no-store' });
+        const res = await fetch(`${this.ENDPOINT}/${encodeURIComponent(id)}`, {
+          cache: 'no-store',
+          headers: this.headers()
+        });
+        this.handleUnauthorized(res);
         if (res.ok) {
           return await res.json();
         }
@@ -220,13 +257,14 @@
     },
 
     async save(budget) {
-      if (window.location.protocol === 'file:') return false;
+      if (window.location.protocol === 'file:' || !getApiToken()) return false;
       try {
         const res = await fetch(this.ENDPOINT, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.headers({ 'Content-Type': 'application/json' }),
           body: JSON.stringify(budget)
         });
+        this.handleUnauthorized(res);
         return res.ok;
       } catch (e) {
         console.warn('Falla al enviar a D1', e);
@@ -235,11 +273,13 @@
     },
 
     async delete(id) {
-      if (window.location.protocol === 'file:') return false;
+      if (window.location.protocol === 'file:' || !getApiToken()) return false;
       try {
         const res = await fetch(`${this.ENDPOINT}/${encodeURIComponent(id)}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: this.headers()
         });
+        this.handleUnauthorized(res);
         return res.ok;
       } catch (e) {
         console.warn('Falla al eliminar de D1', e);
@@ -317,7 +357,11 @@
     const btnChangePin = document.getElementById('btnChangePin');
     const newPinInput = document.getElementById('newPinInput');
 
-    if (sessionStorage.getItem(STORAGE_KEYS.SESSION) === 'true') {
+    // El bloqueo anterior era local y no debe conservarse como vía de acceso.
+    localStorage.removeItem('smartelectric_app_pin_v1');
+    sessionStorage.removeItem('smartelectric_session_unlocked');
+
+    if (getApiToken()) {
       pinOverlay.style.display = 'none';
     } else {
       pinOverlay.style.display = 'flex';
@@ -343,38 +387,89 @@
 
     btnUnlock.addEventListener('click', attemptUnlock);
 
-    function attemptUnlock() {
+    async function attemptUnlock() {
       const enteredPin = Array.from(pinInputs).map(i => i.value).join('');
-      const savedPin = localStorage.getItem(STORAGE_KEYS.PIN) || DEFAULT_PIN;
+      if (!/^\d{4}$/.test(enteredPin)) {
+        pinErrorMsg.style.display = 'block';
+        return;
+      }
 
-      if (enteredPin === savedPin) {
-        sessionStorage.setItem(STORAGE_KEYS.SESSION, 'true');
+      btnUnlock.disabled = true;
+      try {
+        const response = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: enteredPin }),
+          credentials: 'same-origin'
+        });
+
+        if (!response.ok) throw new Error('PIN inválido');
+
+        const session = await response.json();
+        if (!session.token || !session.expiresAt) throw new Error('Respuesta de sesión inválida');
+
+        sessionStorage.setItem(STORAGE_KEYS.API_TOKEN, session.token);
+        sessionStorage.setItem(
+          STORAGE_KEYS.API_EXPIRES_AT,
+          `${session.expiresAt.replace(' ', 'T')}Z`
+        );
         pinOverlay.style.display = 'none';
         pinErrorMsg.style.display = 'none';
         showToast('Bienvenido al cotizador de Smart Electric');
-      } else {
+        await syncWithCloud();
+      } catch {
         pinErrorMsg.style.display = 'block';
+      } finally {
+        btnUnlock.disabled = false;
         pinInputs.forEach(i => i.value = '');
-        if (pinInputs[0]) pinInputs[0].focus();
+        if (pinOverlay.style.display !== 'none' && pinInputs[0]) pinInputs[0].focus();
       }
     }
 
     btnLockApp.addEventListener('click', () => {
-      sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+      clearApiSession();
       pinOverlay.style.display = 'flex';
       pinInputs.forEach(i => i.value = '');
       if (pinInputs[0]) pinInputs[0].focus();
     });
 
-    btnChangePin.addEventListener('click', () => {
+    btnChangePin.addEventListener('click', async () => {
       const val = newPinInput.value.trim();
-      if (/^\d{4}$/.test(val)) {
-        localStorage.setItem(STORAGE_KEYS.PIN, val);
-        newPinInput.value = '';
-        showToast('PIN actualizado con éxito: ' + val);
-      } else {
+      if (!/^\d{4}$/.test(val)) {
         alert('El PIN debe contener exactamente 4 números dígitos.');
+        return;
       }
+
+      const token = getApiToken();
+      if (!token) {
+        alert('Tu sesión expiró. Ingresá nuevamente para actualizar el PIN.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/pin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ newPin: val }),
+          credentials: 'same-origin'
+        });
+        if (!response.ok) throw new Error('No se pudo actualizar el PIN');
+        newPinInput.value = '';
+        showToast('PIN actualizado con éxito.');
+      } catch {
+        alert('No se pudo actualizar el PIN. Intentá iniciar sesión nuevamente.');
+      }
+    });
+
+    window.addEventListener('smartelectric-session-expired', () => {
+      clearApiSession();
+      pinOverlay.style.display = 'flex';
+      pinErrorMsg.style.display = 'block';
+      pinInputs.forEach(i => i.value = '');
+      if (pinInputs[0]) pinInputs[0].focus();
     });
   }
 
@@ -1557,7 +1652,7 @@
     const matAmount = b.materialsAmount || 0;
     const grandTotal = Math.max(0, (subtotal - discAmount) + matAmount);
 
-    let msg = `⚡ *SMART ELECTRIC — PRESUPUESTO PROFESIONAL*\n`;
+    let msg = `⚡ *SMART ELECTRIC*\n`;
     msg += `📄 *Presupuesto:* ${b.number}\n`;
     msg += `👤 *Cliente:* ${b.client?.name || 'Cliente'}\n`;
     if (b.client?.address) {
@@ -1638,8 +1733,12 @@
     await StorageDB.init();
     updateHistoryCounter();
 
-    // 2. Sincronizar automáticamente en segundo plano con Cloudflare D1
-    await syncWithCloud();
+    // 2. Sincronizar únicamente con una sesión validada por D1.
+    if (getApiToken()) {
+      await syncWithCloud();
+    } else {
+      updateCloudStatusBadge(false);
+    }
   });
 
 })();

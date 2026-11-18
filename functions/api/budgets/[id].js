@@ -3,15 +3,13 @@
  * Ruta: /api/budgets/:id
  */
 
-export async function onRequestGet({ env, params }) {
-  if (!env.DB) {
-    return new Response(JSON.stringify({ 
-      error: "Base de datos D1 no vinculada. Verifique el binding 'DB' en Cloudflare Pages Settings." 
-    }), {
-      status: 503,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
+import { validateSession, unauthorizedResponse, dbNotBoundResponse } from '../../_shared/auth.js';
+
+export async function onRequestGet({ env, params, request }) {
+  if (!env.DB) return dbNotBoundResponse();
+
+  const valid = await validateSession(env, request);
+  if (!valid) return unauthorizedResponse();
 
   const budgetId = params.id;
 
@@ -87,15 +85,11 @@ export async function onRequestGet({ env, params }) {
   }
 }
 
-export async function onRequestDelete({ env, params }) {
-  if (!env.DB) {
-    return new Response(JSON.stringify({ 
-      error: "Base de datos D1 no vinculada. Verifique el binding 'DB' en Cloudflare Pages Settings." 
-    }), {
-      status: 503,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
+export async function onRequestDelete({ env, params, request }) {
+  if (!env.DB) return dbNotBoundResponse();
+
+  const valid = await validateSession(env, request);
+  if (!valid) return unauthorizedResponse();
 
   const budgetId = params.id;
 

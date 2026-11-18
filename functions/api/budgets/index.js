@@ -1,17 +1,16 @@
 /**
  * Cloudflare Pages Function - API de Presupuestos (Listar y Guardar)
  * Ruta: /api/budgets
+ * Requiere: Authorization: Bearer <token> en todos los métodos.
  */
 
-export async function onRequestGet({ env }) {
-  if (!env.DB) {
-    return new Response(JSON.stringify({ 
-      error: "Base de datos D1 no vinculada. Verifique el binding 'DB' en Cloudflare Pages Settings." 
-    }), {
-      status: 503,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
+import { validateSession, unauthorizedResponse, dbNotBoundResponse } from '../../_shared/auth.js';
+
+export async function onRequestGet({ env, request }) {
+  if (!env.DB) return dbNotBoundResponse();
+
+  const valid = await validateSession(env, request);
+  if (!valid) return unauthorizedResponse();
 
   try {
     const query = `
@@ -73,14 +72,10 @@ export async function onRequestGet({ env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.DB) {
-    return new Response(JSON.stringify({ 
-      error: "Base de datos D1 no vinculada. Verifique el binding 'DB' en Cloudflare Pages Settings." 
-    }), {
-      status: 503,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
+  if (!env.DB) return dbNotBoundResponse();
+
+  const valid = await validateSession(env, request);
+  if (!valid) return unauthorizedResponse();
 
   try {
     const budget = await request.json();
