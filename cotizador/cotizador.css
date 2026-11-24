@@ -472,6 +472,36 @@ textarea.form-control {
   font-size: 0.8em;
 }
 
+.history-budget-number {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 0;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  color: var(--blue);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+  text-decoration: underline;
+  text-decoration-color: rgba(8, 125, 221, 0.45);
+  text-underline-offset: 3px;
+  transition: all 0.15s ease-in-out;
+}
+
+.history-budget-number:hover {
+  color: var(--navy);
+  background: rgba(8, 125, 221, 0.1);
+  text-decoration-color: var(--navy);
+}
+
+.history-budget-number:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
 .budget-table td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--line);

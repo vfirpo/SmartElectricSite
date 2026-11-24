@@ -1255,8 +1255,10 @@
 
       tr.innerHTML = `
         <td>
-          <strong style="color: var(--navy);">${escapeHtml(b.number)}</strong>
-          ${countPhotos > 0 ? `<span title="${countPhotos} foto(s) de diagnóstico" style="font-size: 0.8rem; margin-left: 4px;">📸(${countPhotos})</span>` : ''}
+          <button type="button" class="history-budget-number" data-print-id="${b.id}" title="Ver / Abrir PDF (${escapeHtml(b.number)})">
+            ${escapeHtml(b.number)}
+          </button>
+          ${countPhotos > 0 ? `<span title="${countPhotos} foto(s) de diagnóstico" style="font-size: 0.8rem; margin-left: 6px;">📸(${countPhotos})</span>` : ''}
         </td>
         <td>${b.date || '--'}</td>
         <td><strong>${escapeHtml(b.client?.name || 'Sin nombre')}</strong></td>
